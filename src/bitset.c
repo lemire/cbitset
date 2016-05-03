@@ -11,7 +11,7 @@
 bitset_t *bitset_create() {
   bitset_t *bitset = NULL;
   /* Allocate the bitset itself. */
-  if( ( bitset = malloc( sizeof( bitset_t ) ) ) == NULL ) {
+  if( ( bitset = (bitset_t*) malloc( sizeof( bitset_t ) ) ) == NULL ) {
       return NULL;
   }
   bitset->array = NULL;
@@ -23,7 +23,7 @@ bitset_t *bitset_create() {
 bitset_t *bitset_create_with_capacity( size_t size ) {
   bitset_t *bitset = NULL;
   /* Allocate the bitset itself. */
-  if( ( bitset = malloc( sizeof( bitset_t ) ) ) == NULL ) {
+  if( ( bitset = (bitset_t*) malloc( sizeof( bitset_t ) ) ) == NULL ) {
       return NULL;
   }
   bitset->arraysize = (size + sizeof(uint64_t) * 8 - 1) / (sizeof(uint64_t) * 8);
@@ -39,7 +39,7 @@ bitset_t *bitset_create_with_capacity( size_t size ) {
 bitset_t *bitset_copy( const bitset_t *bitset ) {
   bitset_t *copy = NULL;
   /* Allocate the bitset itself. */
-  if( ( copy = malloc( sizeof( bitset_t ) ) ) == NULL ) {
+  if( ( copy = (bitset_t*) malloc( sizeof( bitset_t ) ) ) == NULL ) {
       return NULL;
   }
   memcpy(copy,bitset,sizeof(bitset_t));
