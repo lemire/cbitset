@@ -13,5 +13,8 @@ HEADERS=./include/bitset.h
 
 bitset.o: ./src/bitset.c $(HEADERS)
 	$(CC) $(CFLAGS) -c ./src/bitset.c -Iinclude
+
+unit: bitset.o ./tests/unit.c $(HEADERS)
+	$(CC) $(CFLAGS) -o unit ./tests/unit.c bitset.o -Iinclude
 clean:
-	rm -f  *.o 
+	rm -f  *.o unit

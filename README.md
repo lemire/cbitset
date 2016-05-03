@@ -7,6 +7,11 @@ Usage
 bitset_t * b = bitset_create();
 bitset_set(b,10);
 bitset_get(b,10);// returns true
+```
 
+To run tests:
+```bash
+make
+./unit
 ```
 
