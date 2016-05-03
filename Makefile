@@ -8,7 +8,7 @@ else
 CFLAGS = -fPIC -std=c99 -O3  -march=native -Wall -Wextra -Wshadow
 endif # debug
 OBJECTS=bitset.o
-all:  $(OBJECTS)
+all: unit  $(OBJECTS)
 HEADERS=./include/bitset.h 
 
 bitset.o: ./src/bitset.c $(HEADERS)
