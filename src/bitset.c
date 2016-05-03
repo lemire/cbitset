@@ -56,19 +56,17 @@ void bitset_free(bitset_t *bitset) {
   free(bitset->array);
   free(bitset);
 }
-
 /* Resize the bitset so that it can support newarraysize * 64 bits. Return true in case of success, false for failure. */
-bool bitset_resize( bitset_t *bitset,  size_t newarraysize ) {
+bool bitset_resize( bitset_t *bitset,  size_t newarraysize, bool padwithzeroes ) {
   size_t smallest = newarraysize < bitset->arraysize ? newarraysize : bitset->arraysize;
   uint64_t *newarray;
-  if ((newarray = (uint64_t *) malloc(sizeof(uint64_t) * newarraysize)) == NULL) {
+  if ((newarray = (uint64_t *) realloc(bitset->array, sizeof(uint64_t) * newarraysize)) == NULL) {
+    free(bitset->array);
     return false;
   }
-  memcpy(newarray,bitset->array,smallest * sizeof(uint64_t));
-  if(newarraysize > smallest)
-    memset(bitset->array + smallest,0,sizeof(uint64_t) * (newarraysize - smallest));
-  free(bitset->array);
   bitset->array = newarray;
+  if (padwithzeroes && (newarraysize > smallest))
+    memset(bitset->array + smallest,0,sizeof(uint64_t) * (newarraysize - smallest));
   bitset->arraysize = newarraysize;
   return true; // success!
 }
@@ -92,7 +90,7 @@ size_t bitset_size_in_bytes(const bitset_t *bitset) {
 void bitset_set(bitset_t *bitset,  size_t i ) {
   if ((i >> 6) >= bitset->arraysize) {
     size_t whatisneeded = ((i+64)>>6);
-    if( bitset_resize(bitset,  whatisneeded) == 0) {
+    if( ! bitset_resize(bitset,  whatisneeded, true) ) {
         return;
     }
   }
@@ -131,17 +129,22 @@ size_t bitset_count(const bitset_t *bitset) {
 }
 
 
-bool inplace_union(bitset_t *b1, const bitset_t *b2) {
+bool bitset_inplace_union(bitset_t *b1, const bitset_t *b2) {
   if(b1->arraysize < b2->arraysize) {
-     if(bitset_resize( b1, b2->arraysize)) return false;
   }
-  for(size_t k = 0 ; k < b1->arraysize; ++k) {
-    b1 ->array[k] |= b2->array[k];
+  size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
+  for(size_t k = 0 ; k < minlength; ++k) {
+    b1->array[k] |= b2->array[k];
+  }
+  if(b2->arraysize > b1->arraysize) {
+     size_t oldsize = b1->arraysize;
+     if(!bitset_resize( b1, b2->arraysize, false)) return false;
+     memcpy(b1->array + oldsize, b2->array + oldsize, (b2->arraysize - oldsize) * sizeof(uint64_t));
   }
   return true;
 }
 
-void inplace_intersection(bitset_t *b1, const bitset_t *b2) {
+void bitset_inplace_intersection(bitset_t *b1, const bitset_t *b2) {
   size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
   size_t k = 0;
   for( ; k < minlength; ++k) {

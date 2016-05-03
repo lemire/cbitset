@@ -24,8 +24,8 @@ void bitset_free(bitset_t *bitset);
 /* Create a copy */
 bitset_t * bitset_copy(const bitset_t *bitset);
 
-/* Resize the bitset. Return true in case of success, false for failure. */
-bool bitset_resize( bitset_t *bitset,  size_t newarraysize );
+/* Resize the bitset. Return true in case of success, false for failure. Pad with zeroes new buffer areas if requested. */
+bool bitset_resize( bitset_t *bitset,  size_t newarraysize, bool padwithzeroes );
 
 /* returns how many bytes of memory the backend buffer uses */
 size_t bitset_size_in_bytes(const bitset_t *bitset);
@@ -46,9 +46,9 @@ bool bitset_get(const bitset_t *bitset,  size_t i );
 size_t bitset_count(const bitset_t *bitset);
 
 /* compute the union in-place (to b1), returns true if successful */
-bool inplace_union(bitset_t *b1, const bitset_t *b2);
+bool bitset_inplace_union(bitset_t *b1, const bitset_t *b2);
 
 /* compute the intersection in-place (to b1) */
-void inplace_intersection(bitset_t *b1, const bitset_t *b2);
+void bitset_inplace_intersection(bitset_t *b1, const bitset_t *b2);
 
 #endif
