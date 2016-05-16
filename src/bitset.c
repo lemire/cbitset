@@ -99,6 +99,9 @@ void bitset_set(bitset_t *bitset,  size_t i ) {
 
 /* Get the value of the ith bit.  */
 bool bitset_get(const bitset_t *bitset,  size_t i ) {
+  if ((i >> 6) >= bitset->arraysize) {
+    return false;
+  }
   uint64_t w = bitset->array[i >> 6];
   return ( w & ( ((uint64_t)1) << (i % 64))) != 0 ;
 }
@@ -130,8 +133,6 @@ size_t bitset_count(const bitset_t *bitset) {
 
 
 bool bitset_inplace_union(bitset_t *b1, const bitset_t *b2) {
-  if(b1->arraysize < b2->arraysize) {
-  }
   size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
   for(size_t k = 0 ; k < minlength; ++k) {
     b1->array[k] |= b2->array[k];
@@ -148,9 +149,9 @@ void bitset_inplace_intersection(bitset_t *b1, const bitset_t *b2) {
   size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
   size_t k = 0;
   for( ; k < minlength; ++k) {
-    b1 ->array[k] &= b2->array[k];
+    b1->array[k] &= b2->array[k];
   }
   for(; k < b1->arraysize; ++k) {
-    b1 ->array[k] = 0;
+    b1->array[k] = 0; // memset could, maybe, be a tiny bit faster
   }
 }
