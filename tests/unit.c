@@ -30,4 +30,5 @@ void test_union_intersection() {
 int main() {
   test_construct();
   test_union_intersection();
+  printf("All asserts passed. Code is probably ok.\n");
 }
