@@ -22,7 +22,7 @@ bitset_t *bitset_create_with_capacity( size_t size );
 void bitset_free(bitset_t *bitset);
 
 /* Set all bits to zero. */
-void clear(bitset_t *bitset);
+void bitset_clear(bitset_t *bitset);
 
 /* Create a copy */
 bitset_t * bitset_copy(const bitset_t *bitset);

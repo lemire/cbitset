@@ -55,7 +55,7 @@ bitset_t *bitset_copy( const bitset_t *bitset ) {
   return copy;
 }
 
-void clear(bitset_t *bitset) {
+void bitset_clear(bitset_t *bitset) {
   memset(bitset->array,0,sizeof(uint64_t) * bitset->arraysize);
 }
 
