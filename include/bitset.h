@@ -21,6 +21,9 @@ bitset_t *bitset_create_with_capacity( size_t size );
 /* Free memory. */
 void bitset_free(bitset_t *bitset);
 
+/* Set all bits to zero. */
+void clear(bitset_t *bitset);
+
 /* Create a copy */
 bitset_t * bitset_copy(const bitset_t *bitset);
 
