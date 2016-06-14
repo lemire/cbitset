@@ -7,8 +7,8 @@
 
 #include "bitset.h"
 
-#if __SIZEOF_LONG__ == 4
-#error This code assumes  64-bit longs (by use of the GCC intrinsics). Your system is not currently supported.
+#if __SIZEOF_LONG_LONG__ != 8
+#error This code assumes  64-bit long longs (by use of the GCC intrinsics). Your system is not currently supported.
 #endif
 
 /* Create a new bitset. Return NULL in case of failure. */
@@ -116,25 +116,26 @@ bool bitset_get(const bitset_t *bitset,  size_t i ) {
 
 size_t bitset_count(const bitset_t *bitset) {
     size_t card = 0;
-    size_t k =0;
+    size_t k = 0;
+    // assumes that long long is 8 bytes
     for(; k + 7 < bitset->arraysize; k+=8) {
-        card += __builtin_popcountl(bitset->array[k]);
-        card += __builtin_popcountl(bitset->array[k+1]);
-        card += __builtin_popcountl(bitset->array[k+2]);
-        card += __builtin_popcountl(bitset->array[k+3]);
-        card += __builtin_popcountl(bitset->array[k+4]);
-        card += __builtin_popcountl(bitset->array[k+5]);
-        card += __builtin_popcountl(bitset->array[k+6]);
-        card += __builtin_popcountl(bitset->array[k+7]);
+        card += __builtin_popcountll(bitset->array[k]);
+        card += __builtin_popcountll(bitset->array[k+1]);
+        card += __builtin_popcountll(bitset->array[k+2]);
+        card += __builtin_popcountll(bitset->array[k+3]);
+        card += __builtin_popcountll(bitset->array[k+4]);
+        card += __builtin_popcountll(bitset->array[k+5]);
+        card += __builtin_popcountll(bitset->array[k+6]);
+        card += __builtin_popcountll(bitset->array[k+7]);
     }
     for(; k + 3 < bitset->arraysize; k+=4) {
-        card += __builtin_popcountl(bitset->array[k]);
-        card += __builtin_popcountl(bitset->array[k+1]);
-        card += __builtin_popcountl(bitset->array[k+2]);
-        card += __builtin_popcountl(bitset->array[k+3]);
+        card += __builtin_popcountll(bitset->array[k]);
+        card += __builtin_popcountll(bitset->array[k+1]);
+        card += __builtin_popcountll(bitset->array[k+2]);
+        card += __builtin_popcountll(bitset->array[k+3]);
     }
     for(; k < bitset->arraysize; k++) {
-        card += __builtin_popcountl(bitset->array[k]);
+        card += __builtin_popcountll(bitset->array[k]);
     }
     return card;
 }
