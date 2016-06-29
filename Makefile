@@ -21,4 +21,4 @@ unit: bitset.o ./tests/unit.c $(HEADERS)
 benchmark: bitset.o ./benchmarks/benchmark.c $(HEADERS)
 	$(CC) $(CFLAGS) -o benchmark ./benchmarks/benchmark.c bitset.o -Iinclude
 clean:
-	rm -f  *.o unit
+	rm -f  *.o unit benchmark
