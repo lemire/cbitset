@@ -31,19 +31,38 @@ bitset_t * bitset_copy(const bitset_t *bitset);
 bool bitset_resize( bitset_t *bitset,  size_t newarraysize, bool padwithzeroes );
 
 /* returns how many bytes of memory the backend buffer uses */
-size_t bitset_size_in_bytes(const bitset_t *bitset);
+static inline size_t bitset_size_in_bytes(const bitset_t *bitset) {
+  return bitset->arraysize*sizeof(uint64_t);
+}
 
 /* returns how many bits can be accessed */
-size_t bitset_size_in_bits(const bitset_t *bitset);
+static inline size_t bitset_size_in_bits(const bitset_t *bitset) {
+  return bitset->arraysize * 64;
+}
 
 /* returns how many words (64-bit) of memory the backend buffer uses */
-size_t bitset_size_in_words(const bitset_t *bitset);
+static inline size_t bitset_size_in_words(const bitset_t *bitset) {
+  return bitset->arraysize;
+}
 
 /* Set the ith bit. Attempts to resize the bitset if needed (may silently fail) */
-void bitset_set(bitset_t *bitset,  size_t i );
+static inline void bitset_set(bitset_t *bitset,  size_t i ) {
+  if ((i >> 6) >= bitset->arraysize) {
+    size_t whatisneeded = ((i+64)>>6);
+    if( ! bitset_resize(bitset,  whatisneeded, true) ) {
+        return;
+    }
+  }
+  bitset->array[i >> 6] |= ((uint64_t)1) << (i % 64);
+}
 
 /* Get the value of the ith bit.  */
-bool bitset_get(const bitset_t *bitset,  size_t i );
+static inline bool bitset_get(const bitset_t *bitset,  size_t i ) {
+  if ((i >> 6) >= bitset->arraysize) {
+    return false;
+  }
+  return ( bitset->array[i >> 6] & ( ((uint64_t)1) << (i % 64))) != 0 ;
+}
 
 /* Count number of bit sets.  */
 size_t bitset_count(const bitset_t *bitset);
