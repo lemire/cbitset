@@ -3,6 +3,19 @@
 #include <stdlib.h>
 #include "bitset.h"
 
+void test_iterate() {
+  bitset_t * b = bitset_create();
+  for(int k = 0; k < 1000; ++k)
+    bitset_set(b,3*k);
+  assert(bitset_count(b) == 1000);
+  size_t k = 0;
+
+  for(size_t i = 0; nextSetBit(b,&i) ; i++) {
+    assert(i == k);
+    k += 3;
+  }
+  assert(k == 3000);
+}
 
 void test_construct() {
   bitset_t * b = bitset_create();
@@ -30,5 +43,6 @@ void test_union_intersection() {
 int main() {
   test_construct();
   test_union_intersection();
+  test_iterate();
   printf("All asserts passed. Code is probably ok.\n");
 }

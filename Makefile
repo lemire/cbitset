@@ -8,7 +8,7 @@ else
 CFLAGS = -fPIC -std=c99 -O3  -march=native -Wall -Wextra -Wshadow
 endif # debug
 OBJECTS=bitset.o
-all: unit benchmark $(OBJECTS)
+all: unit benchmark lemirebenchmark $(OBJECTS)
 HEADERS=./include/bitset.h
 
 bitset.o: ./src/bitset.c $(HEADERS)
@@ -17,7 +17,8 @@ bitset.o: ./src/bitset.c $(HEADERS)
 unit: bitset.o ./tests/unit.c $(HEADERS)
 	$(CC) $(CFLAGS) -o unit ./tests/unit.c bitset.o -Iinclude
 
-
+lemirebenchmark: bitset.o ./benchmarks/lemirebenchmark.c $(HEADERS)
+	$(CC) $(CFLAGS) -o lemirebenchmark ./benchmarks/lemirebenchmark.c bitset.o -Iinclude
 benchmark: bitset.o ./benchmarks/benchmark.c $(HEADERS)
 	$(CC) $(CFLAGS) -o benchmark ./benchmarks/benchmark.c bitset.o -Iinclude
 clean:

@@ -4,10 +4,13 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 struct bitset_s {
     uint64_t *array;
     size_t arraysize;
+    size_t capacity;
+
 };
 
 typedef struct bitset_s bitset_t;
@@ -45,23 +48,42 @@ static inline size_t bitset_size_in_words(const bitset_t *bitset) {
   return bitset->arraysize;
 }
 
+
+/* Grow the bitset so that it can support newarraysize * 64 bits with padding. Return true in case of success, false for failure. */
+static inline bool bitset_grow( bitset_t *bitset,  size_t newarraysize ) {
+  if (bitset->capacity < newarraysize) {
+    uint64_t *newarray;
+    bitset->capacity = newarraysize * 2;
+    if ((newarray = (uint64_t *) realloc(bitset->array, sizeof(uint64_t) * bitset->capacity)) == NULL) {
+      free(bitset->array);
+      return false;
+    }
+    bitset->array = newarray;
+  }
+  memset(bitset->array + bitset->arraysize ,0,sizeof(uint64_t) * (newarraysize - bitset->arraysize));
+  bitset->arraysize = newarraysize;
+  return true; // success!
+}
+
+
 /* Set the ith bit. Attempts to resize the bitset if needed (may silently fail) */
 static inline void bitset_set(bitset_t *bitset,  size_t i ) {
-  if ((i >> 6) >= bitset->arraysize) {
-    size_t whatisneeded = ((i+64)>>6);
-    if( ! bitset_resize(bitset,  whatisneeded, true) ) {
+  size_t shiftedi = i >> 6;
+  if (shiftedi >= bitset->arraysize) {
+    if( ! bitset_grow(bitset,  shiftedi + 1) ) {
         return;
     }
   }
-  bitset->array[i >> 6] |= ((uint64_t)1) << (i % 64);
+  bitset->array[shiftedi] |= ((uint64_t)1) << (i % 64);
 }
 
 /* Get the value of the ith bit.  */
 static inline bool bitset_get(const bitset_t *bitset,  size_t i ) {
-  if ((i >> 6) >= bitset->arraysize) {
+  size_t shiftedi = i >> 6;
+  if (shiftedi >= bitset->arraysize) {
     return false;
   }
-  return ( bitset->array[i >> 6] & ( ((uint64_t)1) << (i % 64))) != 0 ;
+  return ( bitset->array[shiftedi] & ( ((uint64_t)1) << (i % 64))) != 0 ;
 }
 
 /* Count number of bit sets.  */
@@ -72,5 +94,36 @@ bool bitset_inplace_union(bitset_t *b1, const bitset_t *b2);
 
 /* compute the intersection in-place (to b1) */
 void bitset_inplace_intersection(bitset_t *b1, const bitset_t *b2);
+
+
+/* iterate over the set bits
+ like so :
+  for(size_t i = 0; nextSetBit(b,&i) ; i++) {
+    assert(i == k);
+    k += 3;
+  }
+  */
+static inline bool nextSetBit(const bitset_t *bitset, size_t *i) {
+      size_t x = *i >> 6;
+      if (x >= bitset->arraysize) {
+        return false;
+      }
+      uint64_t w = bitset->array[x];
+      w >>= (*i & 63);
+      if (w != 0) {
+        *i += __builtin_ctzll(w);
+        return true;
+      }
+      x ++;
+      while (x < bitset->arraysize) {
+        w = bitset->array[x];
+        if (w != 0) {
+          *i = x * 64 + __builtin_ctzll(w);
+          return true;
+        }
+        x ++;
+      }
+      return false;
+}
 
 #endif

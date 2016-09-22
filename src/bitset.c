@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <limits.h>
-#include <string.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -20,6 +19,7 @@ bitset_t *bitset_create() {
   }
   bitset->array = NULL;
   bitset->arraysize = 0;
+  bitset->capacity = 0;
   return bitset;
 }
 
@@ -31,6 +31,7 @@ bitset_t *bitset_create_with_capacity( size_t size ) {
       return NULL;
   }
   bitset->arraysize = (size + sizeof(uint64_t) * 8 - 1) / (sizeof(uint64_t) * 8);
+  bitset->capacity = bitset->arraysize;
   if ((bitset->array = (uint64_t *) malloc(sizeof(uint64_t) * bitset->arraysize)) == NULL) {
     free( bitset);
     return NULL;
@@ -47,6 +48,7 @@ bitset_t *bitset_copy( const bitset_t *bitset ) {
       return NULL;
   }
   memcpy(copy,bitset,sizeof(bitset_t));
+  copy->capacity = copy->arraysize;
   if ((copy->array = (uint64_t *) malloc(sizeof(uint64_t) * bitset->arraysize)) == NULL) {
     free(copy);
     return NULL;
@@ -67,12 +69,15 @@ void bitset_free(bitset_t *bitset) {
 /* Resize the bitset so that it can support newarraysize * 64 bits. Return true in case of success, false for failure. */
 bool bitset_resize( bitset_t *bitset,  size_t newarraysize, bool padwithzeroes ) {
   size_t smallest = newarraysize < bitset->arraysize ? newarraysize : bitset->arraysize;
-  uint64_t *newarray;
-  if ((newarray = (uint64_t *) realloc(bitset->array, sizeof(uint64_t) * newarraysize)) == NULL) {
-    free(bitset->array);
-    return false;
+  if (bitset->capacity < newarraysize) {
+    uint64_t *newarray;
+    bitset->capacity = newarraysize * 2;
+    if ((newarray = (uint64_t *) realloc(bitset->array, sizeof(uint64_t) * bitset->capacity)) == NULL) {
+      free(bitset->array);
+      return false;
+    }
+    bitset->array = newarray;
   }
-  bitset->array = newarray;
   if (padwithzeroes && (newarraysize > smallest))
     memset(bitset->array + smallest,0,sizeof(uint64_t) * (newarraysize - smallest));
   bitset->arraysize = newarraysize;
