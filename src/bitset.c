@@ -136,3 +136,25 @@ void bitset_inplace_intersection(bitset_t *b1, const bitset_t *b2) {
     b1->array[k] = 0; // memset could, maybe, be a tiny bit faster
   }
 }
+
+void bitset_inplace_difference(bitset_t *b1, const bitset_t *b2) {
+  size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
+  size_t k = 0;
+  for( ; k < minlength; ++k) {
+    b1->array[k] &= ~ (b2->array[k]);
+  }
+}
+
+bool bitset_inplace_symmetric_difference(bitset_t *b1, const bitset_t *b2) {
+  size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
+  size_t k = 0;
+  for( ; k < minlength; ++k) {
+    b1->array[k] ^= b2->array[k];
+  }
+  if(b2->arraysize > b1->arraysize) {
+     size_t oldsize = b1->arraysize;
+     if(!bitset_resize( b1, b2->arraysize, false)) return false;
+     memcpy(b1->array + oldsize, b2->array + oldsize, (b2->arraysize - oldsize) * sizeof(uint64_t));
+  }
+  return true;
+}

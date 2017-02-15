@@ -89,18 +89,23 @@ static inline bool bitset_get(const bitset_t *bitset,  size_t i ) {
 /* Count number of bit sets.  */
 size_t bitset_count(const bitset_t *bitset);
 
-/* compute the union in-place (to b1), returns true if successful */
+/* compute the union in-place (to b1), returns true if successful, to generate a new bitset first call bitset_copy */
 bool bitset_inplace_union(bitset_t *b1, const bitset_t *b2);
 
-/* compute the intersection in-place (to b1) */
+/* compute the intersection in-place (to b1), to generate a new bitset first call bitset_copy */
 void bitset_inplace_intersection(bitset_t *b1, const bitset_t *b2);
+
+/* compute the difference in-place (to b1), to generate a new bitset first call bitset_copy */
+void bitset_inplace_difference(bitset_t *b1, const bitset_t *b2);
+
+/* compute the symmetric difference in-place (to b1), return true if successful, to generate a new bitset first call bitset_copy */
+bool bitset_inplace_symmetric_difference(bitset_t *b1, const bitset_t *b2);
 
 
 /* iterate over the set bits
  like so :
   for(size_t i = 0; nextSetBit(b,&i) ; i++) {
-    assert(i == k);
-    k += 3;
+    //.....
   }
   */
 static inline bool nextSetBit(const bitset_t *bitset, size_t *i) {
@@ -124,6 +129,14 @@ static inline bool nextSetBit(const bitset_t *bitset, size_t *i) {
         x ++;
       }
       return false;
+}
+
+static inline void bitset_print(const bitset_t *b) {
+  printf("{");
+  for(size_t i = 0; nextSetBit(b,&i) ; i++) {
+    printf("%zu, ",i);
+  }
+  printf("}");
 }
 
 #endif

@@ -34,10 +34,23 @@ void test_union_intersection() {
     bitset_set(b1,2*k);
     bitset_set(b2,2*k+1);
   }
+  // calling xor twice should leave things unchanged
+  bitset_inplace_symmetric_difference(b1,b2);
+  assert(bitset_count(b1) == 2000);
+  bitset_inplace_symmetric_difference(b1,b2);
+  assert(bitset_count(b1) == 1000);
+  bitset_inplace_difference(b1,b2);// should make no difference
+  assert(bitset_count(b1) == 1000);
   bitset_inplace_union(b1,b2);
   assert(bitset_count(b1) == 2000);
   bitset_inplace_intersection(b1,b2);
   assert(bitset_count(b1) == 1000);
+  bitset_inplace_difference(b1,b2);
+  assert(bitset_count(b1) == 0);
+  bitset_inplace_union(b1,b2);
+  bitset_inplace_difference(b2,b1);
+  assert(bitset_count(b2) == 0);
+
 }
 
 int main() {
