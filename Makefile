@@ -9,7 +9,7 @@ CFLAGS = -fPIC -std=c99 -O3  -march=native -Wall -Wextra -Wshadow
 endif # debug
 OBJECTS=bitset.o
 all: unit benchmark lemirebenchmark $(OBJECTS)
-HEADERS=./include/bitset.h
+HEADERS=./include/bitset.h ./include/portability.h
 
 bitset.o: ./src/bitset.c $(HEADERS)
 	$(CC) $(CFLAGS) -c ./src/bitset.c -Iinclude

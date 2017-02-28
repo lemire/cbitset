@@ -6,10 +6,6 @@
 
 #include "bitset.h"
 
-#if __SIZEOF_LONG_LONG__ != 8
-#error This code assumes  64-bit long longs (by use of the GCC intrinsics). Your system is not currently supported.
-#endif
-
 /* Create a new bitset. Return NULL in case of failure. */
 bitset_t *bitset_create() {
   bitset_t *bitset = NULL;

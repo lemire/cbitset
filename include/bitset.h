@@ -6,6 +6,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "portability.h"
+
 struct bitset_s {
     uint64_t *array;
     size_t arraysize;
