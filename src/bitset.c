@@ -122,6 +122,65 @@ bool bitset_inplace_union(bitset_t *b1, const bitset_t *b2) {
   return true;
 }
 
+size_t bitset_minimum(const bitset_t *bitset) {
+  for(size_t k = 0; k < bitset->arraysize; k++) {
+    uint64_t w = bitset->array[k];
+    if ( w != 0 ) {
+      return __builtin_ctzll(w) + k * 64;
+    }
+  }
+  return 0;
+}
+
+size_t bitset_maximum(const bitset_t *bitset) {
+  for(size_t k = bitset->arraysize ; k > 0 ; k--) {
+    uint64_t w = bitset->array[k - 1];
+    if ( w != 0 ) {
+      return  63 - __builtin_clzll(w) + (k - 1) * 64;
+    }
+  }
+  return 0;
+}
+
+size_t bitset_union_count(const bitset_t *b1, const bitset_t *b2) {
+  size_t answer = 0;
+  size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
+  size_t k = 0;
+  for( ; k + 3 < minlength; k += 4) {
+    answer += __builtin_popcountll ( b1->array[k] | b2->array[k]);
+    answer += __builtin_popcountll ( b1->array[k+1] | b2->array[k+1]);
+    answer += __builtin_popcountll ( b1->array[k+2] | b2->array[k+2]);
+    answer += __builtin_popcountll ( b1->array[k+3] | b2->array[k+3]);
+  }
+  for( ; k < minlength; ++k) {
+    answer += __builtin_popcountll ( b1->array[k] | b2->array[k]);
+  }
+  if(b2->arraysize > b1->arraysize) {
+    //k = b1->arraysize;
+    for(; k + 3 < b2->arraysize; k+=4) {
+      answer += __builtin_popcountll (b2->array[k]);
+      answer += __builtin_popcountll (b2->array[k+1]);
+      answer += __builtin_popcountll (b2->array[k+2]);
+      answer += __builtin_popcountll (b2->array[k+3]);
+    }
+    for(; k < b2->arraysize; ++k) {
+      answer += __builtin_popcountll (b2->array[k]);
+    }
+  } else {
+    //k = b2->arraysize;
+    for(; k  + 3 < b1->arraysize; k+=4) {
+      answer += __builtin_popcountll (b1->array[k]);
+      answer += __builtin_popcountll (b1->array[k+1]);
+      answer += __builtin_popcountll (b1->array[k+2]);
+      answer += __builtin_popcountll (b1->array[k+3]);
+    }
+    for(; k < b1->arraysize; ++k) {
+      answer += __builtin_popcountll (b1->array[k]);
+    }
+  }
+  return answer;
+}
+
 void bitset_inplace_intersection(bitset_t *b1, const bitset_t *b2) {
   size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
   size_t k = 0;
@@ -131,6 +190,15 @@ void bitset_inplace_intersection(bitset_t *b1, const bitset_t *b2) {
   for(; k < b1->arraysize; ++k) {
     b1->array[k] = 0; // memset could, maybe, be a tiny bit faster
   }
+}
+
+size_t bitset_intersection_count(const bitset_t *b1, const bitset_t *b2) {
+  size_t answer = 0;
+  size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
+  for(size_t k = 0 ; k < minlength; ++k) {
+    answer += __builtin_popcountll ( b1->array[k] & b2->array[k]);
+  }
+  return answer;
 }
 
 void bitset_inplace_difference(bitset_t *b1, const bitset_t *b2) {
