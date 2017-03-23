@@ -37,7 +37,7 @@ bitset_t *bitset_create_with_capacity( size_t size ) {
 }
 
 /* Create a copy */
-bitset_t *bitset_copy( const bitset_t *bitset ) {
+bitset_t *bitset_copy( const bitset_t * bitset ) {
   bitset_t *copy = NULL;
   /* Allocate the bitset itself. */
   if( ( copy = (bitset_t*) malloc( sizeof( bitset_t ) ) ) == NULL ) {
@@ -109,7 +109,7 @@ size_t bitset_count(const bitset_t *bitset) {
 }
 
 
-bool bitset_inplace_union(bitset_t *b1, const bitset_t *b2) {
+bool bitset_inplace_union(bitset_t * restrict b1, const bitset_t * restrict b2) {
   size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
   for(size_t k = 0 ; k < minlength; ++k) {
     b1->array[k] |= b2->array[k];
@@ -142,7 +142,7 @@ size_t bitset_maximum(const bitset_t *bitset) {
   return 0;
 }
 
-size_t bitset_union_count(const bitset_t *b1, const bitset_t *b2) {
+size_t bitset_union_count(const bitset_t *restrict b1, const bitset_t * restrict b2) {
   size_t answer = 0;
   size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
   size_t k = 0;
@@ -181,7 +181,7 @@ size_t bitset_union_count(const bitset_t *b1, const bitset_t *b2) {
   return answer;
 }
 
-void bitset_inplace_intersection(bitset_t *b1, const bitset_t *b2) {
+void bitset_inplace_intersection(bitset_t * restrict b1, const bitset_t * restrict b2) {
   size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
   size_t k = 0;
   for( ; k < minlength; ++k) {
@@ -192,7 +192,7 @@ void bitset_inplace_intersection(bitset_t *b1, const bitset_t *b2) {
   }
 }
 
-size_t bitset_intersection_count(const bitset_t *b1, const bitset_t *b2) {
+size_t bitset_intersection_count(const bitset_t * restrict b1, const bitset_t * restrict b2) {
   size_t answer = 0;
   size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
   for(size_t k = 0 ; k < minlength; ++k) {
@@ -201,7 +201,7 @@ size_t bitset_intersection_count(const bitset_t *b1, const bitset_t *b2) {
   return answer;
 }
 
-void bitset_inplace_difference(bitset_t *b1, const bitset_t *b2) {
+void bitset_inplace_difference(bitset_t *restrict b1, const bitset_t * restrict b2) {
   size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
   size_t k = 0;
   for( ; k < minlength; ++k) {
@@ -209,7 +209,7 @@ void bitset_inplace_difference(bitset_t *b1, const bitset_t *b2) {
   }
 }
 
-bool bitset_inplace_symmetric_difference(bitset_t *b1, const bitset_t *b2) {
+bool bitset_inplace_symmetric_difference(bitset_t *restrict b1, const bitset_t * restrict b2) {
   size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
   size_t k = 0;
   for( ; k < minlength; ++k) {
