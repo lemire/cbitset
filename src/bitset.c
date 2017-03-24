@@ -209,6 +209,20 @@ void bitset_inplace_difference(bitset_t *restrict b1, const bitset_t * restrict 
   }
 }
 
+
+size_t  bitset_difference_count(const bitset_t *restrict b1, const bitset_t * restrict b2) {
+  size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
+  size_t k = 0;
+  size_t answer = 0;
+  for( ; k < minlength; ++k) {
+    answer += __builtin_popcountll (b1->array[k] & ~ (b2->array[k]));
+  }
+  for( ; k < b1->arraysize ; ++k) {
+    answer += __builtin_popcountll (b1->array[k]);
+  }
+  return answer;
+}
+
 bool bitset_inplace_symmetric_difference(bitset_t *restrict b1, const bitset_t * restrict b2) {
   size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
   size_t k = 0;
@@ -219,6 +233,25 @@ bool bitset_inplace_symmetric_difference(bitset_t *restrict b1, const bitset_t *
      size_t oldsize = b1->arraysize;
      if(!bitset_resize( b1, b2->arraysize, false)) return false;
      memcpy(b1->array + oldsize, b2->array + oldsize, (b2->arraysize - oldsize) * sizeof(uint64_t));
+  }
+  return true;
+}
+
+size_t  bitset_symmetric_difference_count(const bitset_t *restrict b1, const bitset_t * restrict b2) {
+  size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
+  size_t k = 0;
+  size_t answer = 0;
+  for( ; k < minlength; ++k) {
+    answer += __builtin_popcountll(b1->array[k] ^ b2->array[k]);
+  }
+  if(b2->arraysize > b1->arraysize) {
+    for( ; k < b2->arraysize; ++k) {
+      answer += __builtin_popcountll(b2->array[k]);
+    }
+  } else {
+    for( ; k < b1->arraysize; ++k) {
+      answer += __builtin_popcountll(b1->array[k]);
+    }
   }
   return true;
 }
