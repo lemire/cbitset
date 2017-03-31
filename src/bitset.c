@@ -253,5 +253,5 @@ size_t  bitset_symmetric_difference_count(const bitset_t *restrict b1, const bit
       answer += __builtin_popcountll(b1->array[k]);
     }
   }
-  return true;
+  return answer;
 }
