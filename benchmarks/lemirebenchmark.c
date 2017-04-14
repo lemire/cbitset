@@ -61,6 +61,21 @@ size_t iterate(bitset_t *b1) {
   return sum;
 }
 
+bool incr(size_t value, void * param) {
+  size_t sum;
+  memcpy(&sum, param, sizeof(size_t));
+  sum ++;
+  memcpy(param, &sum, sizeof(size_t));
+  return true;
+}
+
+size_t iterate2(bitset_t *b1) {
+  size_t sum = 0;
+  bitset_for_each(b1,incr,&sum);
+  return sum;
+}
+
+
 
 int main() {
   int repeat = 10;
@@ -74,6 +89,8 @@ int main() {
   assert(bitset_count(b1) == iterate(b1));
   BEST_TIME_CHECK(bitset_count(b1),count,repeat);
   BEST_TIME_CHECK(iterate(b1),count,repeat);
+  BEST_TIME_CHECK(iterate2(b1),count,repeat);
+
 
   bitset_free(b1);
 

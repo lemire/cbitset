@@ -17,6 +17,27 @@ void test_iterate() {
   bitset_free(b);
 }
 
+bool increment(size_t value, void *param) {
+  size_t k; 
+  memcpy(&k, param, sizeof(size_t));
+  assert(value == k);
+  k += 3;
+  memcpy(param, &k, sizeof(size_t));
+  return true;
+}
+
+void test_iterate2() {
+  bitset_t * b = bitset_create();
+  for(int k = 0; k < 1000; ++k)
+    bitset_set(b,3*k);
+  assert(bitset_count(b) == 1000);
+  size_t k = 0;
+  bitset_for_each(b,increment,&k);
+  assert(k == 3000);
+  bitset_free(b);
+}
+
+
 void test_construct() {
   bitset_t * b = bitset_create();
   for(int k = 0; k < 1000; ++k)
@@ -85,6 +106,7 @@ int main() {
   test_construct();
   test_union_intersection();
   test_iterate();
+  test_iterate2();
   test_max_min();
   test_counts();
   printf("All asserts passed. Code is probably ok.\n");

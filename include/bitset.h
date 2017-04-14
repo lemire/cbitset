@@ -151,6 +151,23 @@ static inline bool nextSetBit(const bitset_t *bitset, size_t *i) {
       }
       return false;
 }
+typedef bool (*bitset_iterator)(size_t value, void *param);
+
+// return true if uninterrupted
+static inline bool bitset_for_each(const bitset_t *b, bitset_iterator iterator, void *ptr) {
+  size_t base = 0;
+  for (size_t i = 0; i < b->arraysize; ++i ) {
+    uint64_t w = b->array[i];
+    while (w != 0) {
+      uint64_t t = w & (~w + 1);
+      int r = __builtin_ctzll(w);
+      if(!iterator(r + base, ptr)) return false;
+      w ^= t;
+    }
+    base += 64;
+  }
+  return true;
+}
 
 static inline void bitset_print(const bitset_t *b) {
   printf("{");
