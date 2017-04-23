@@ -256,21 +256,7 @@ size_t  bitset_symmetric_difference_count(const bitset_t *restrict b1, const bit
   return answer;
 }
 
-/* Grow the bitset so that it can support newarraysize * 64 bits with padding. Return true in case of success, false for failure. */
-static inline bool bitset_grow( bitset_t *bitset,  size_t newarraysize ) {
-  if (bitset->capacity < newarraysize) {
-    uint64_t *newarray;
-    bitset->capacity = newarraysize * 2;
-    if ((newarray = (uint64_t *) realloc(bitset->array, sizeof(uint64_t) * bitset->capacity)) == NULL) {
-      free(bitset->array);
-      return false;
-    }
-    bitset->array = newarray;
-  }
-  memset(bitset->array + bitset->arraysize ,0,sizeof(uint64_t) * (newarraysize - bitset->arraysize));
-  bitset->arraysize = newarraysize;
-  return true; // success!
-}
+
 
 bool bitset_trim(bitset_t * bitset) {
   size_t newsize = bitset->arraysize;
