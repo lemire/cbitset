@@ -261,7 +261,10 @@ size_t  bitset_symmetric_difference_count(const bitset_t *restrict b1, const bit
 bool bitset_trim(bitset_t * bitset) {
   size_t newsize = bitset->arraysize;
   while(newsize > 0) {
-    if(bitset->array[newsize - 1] == 0) newsize -= 1;
+    if(bitset->array[newsize - 1] == 0) 
+        newsize -= 1;
+    else
+        break;
   }
   if(bitset->capacity == newsize) return true; // nothing to do
   bitset->capacity = newsize;
