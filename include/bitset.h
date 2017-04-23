@@ -67,6 +67,9 @@ static inline bool bitset_grow( bitset_t *bitset,  size_t newarraysize ) {
   return true; // success!
 }
 
+/* attempts to recover unused memory, return false in case of reallocation failure */
+bool bitset_trim(bitset_t *bitset); 
+
 
 /* Set the ith bit. Attempts to resize the bitset if needed (may silently fail) */
 static inline void bitset_set(bitset_t *bitset,  size_t i ) {
