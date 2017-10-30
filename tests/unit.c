@@ -18,7 +18,7 @@ void test_iterate() {
 }
 
 bool increment(size_t value, void *param) {
-  size_t k; 
+  size_t k;
   memcpy(&k, param, sizeof(size_t));
   assert(value == k);
   k += 3;
@@ -58,6 +58,43 @@ void test_max_min() {
   bitset_free(b);
 }
 
+void test_shift_left() {
+  for(size_t sh = 0; sh < 256; sh++) {
+    bitset_t * b = bitset_create();
+    int power = 3;
+    size_t s1 = 100;
+    size_t s2 = 5000;
+    for(size_t k = s1; k < s2; ++k) {
+      bitset_set(b,power*k);
+    }
+    size_t mycount = bitset_count(b);
+    bitset_shift_left(b,sh);
+    assert(bitset_count(b) == mycount);
+    for(size_t k = s1; k < s2; ++k) {
+      assert(bitset_get(b,power*k + sh));
+    }
+    bitset_free(b);
+  }
+}
+
+void test_shift_right() {
+  for(size_t sh = 0; sh < 256; sh++) {
+    bitset_t * b = bitset_create();
+    int power = 3;
+    size_t s1 = 100 + sh;
+    size_t s2 = s1+5000;
+    for(size_t k = s1; k < s2; ++k) {
+      bitset_set(b,power*k);
+    }
+    size_t mycount = bitset_count(b);
+    bitset_shift_right(b,sh);
+    assert(bitset_count(b) == mycount);
+    for(size_t k = s1; k < s2; ++k) {
+      assert(bitset_get(b,power*k - sh));
+    }
+    bitset_free(b);
+  }
+}
 
 void test_union_intersection() {
   bitset_t * b1 = bitset_create();
@@ -109,5 +146,7 @@ int main() {
   test_iterate2();
   test_max_min();
   test_counts();
+  test_shift_right();
+  test_shift_left();
   printf("All asserts passed. Code is probably ok.\n");
 }

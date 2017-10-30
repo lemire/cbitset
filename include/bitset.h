@@ -68,8 +68,13 @@ static inline bool bitset_grow( bitset_t *bitset,  size_t newarraysize ) {
 }
 
 /* attempts to recover unused memory, return false in case of reallocation failure */
-bool bitset_trim(bitset_t *bitset); 
+bool bitset_trim(bitset_t *bitset);
 
+/* shifts all bits by 's' positions so that the bitset representing values 1,2,10 would represent values 1+s, 2+s, 10+s */
+void bitset_shift_left(bitset_t *bitset, size_t s);
+
+/* shifts all bits by 's' positions so that the bitset representing values 1,2,10 would represent values 1-s, 2-s, 10-s, negative values are deleted */
+void bitset_shift_right(bitset_t *bitset, size_t s);
 
 /* Set the ith bit. Attempts to resize the bitset if needed (may silently fail) */
 static inline void bitset_set(bitset_t *bitset,  size_t i ) {
@@ -179,5 +184,7 @@ static inline void bitset_print(const bitset_t *b) {
   }
   printf("}");
 }
+
+
 
 #endif

@@ -57,6 +57,53 @@ void bitset_clear(bitset_t *bitset) {
   memset(bitset->array,0,sizeof(uint64_t) * bitset->arraysize);
 }
 
+void bitset_shift_left(bitset_t *bitset, size_t s) {
+  size_t extra_words = s / 64;
+  int inword_shift = s % 64;
+  size_t as = bitset->arraysize;
+  if(inword_shift == 0) {
+    bitset_resize(bitset,as + extra_words, false);
+    // could be done with a memmove
+    for(size_t i = as + extra_words ; i > extra_words; i--) {
+      bitset->array[i - 1] = bitset->array[i - 1 - extra_words];
+    }
+  } else {
+    bitset_resize(bitset,as + extra_words + 1, true);
+    bitset->array[as + extra_words] =
+     bitset->array[as - 1] >> (64 - inword_shift);
+    for(size_t i = as + extra_words ; i >= extra_words + 2; i--) {
+      bitset->array[i - 1] = (bitset->array[i - 1 - extra_words] << inword_shift)
+      | (bitset->array[i - 2 - extra_words]>>(64 - inword_shift));
+    }
+    bitset->array[extra_words] = bitset->array[0] <<  inword_shift;
+  }
+  for(size_t i = 0; i < extra_words; i++) {
+    bitset->array[i] = 0;
+  }
+}
+
+
+void bitset_shift_right(bitset_t *bitset, size_t s) {
+  size_t extra_words = s / 64;
+  int inword_shift = s % 64;
+  size_t as = bitset->arraysize;
+  if(inword_shift == 0) {
+    // could be done with a memmove
+    for(size_t i = 0 ; i < as - extra_words; i++) {
+      bitset->array[i] = bitset->array[i + extra_words];
+    }
+    bitset_resize(bitset,as - extra_words, false);
+
+  } else {
+    for(size_t i = 0 ; i + extra_words + 1 < as ; i++) {
+      bitset->array[i] = (bitset->array[i + extra_words] >> inword_shift)
+      | (bitset->array[i + extra_words + 1] << (64 - inword_shift));
+    }
+    bitset->array[as - extra_words - 1] = (bitset->array[as - 1] >> inword_shift);
+    bitset_resize(bitset,as - extra_words , false);
+  }
+}
+
 /* Free memory. */
 void bitset_free(bitset_t *bitset) {
   free(bitset->array);
@@ -261,7 +308,7 @@ size_t  bitset_symmetric_difference_count(const bitset_t *restrict b1, const bit
 bool bitset_trim(bitset_t * bitset) {
   size_t newsize = bitset->arraysize;
   while(newsize > 0) {
-    if(bitset->array[newsize - 1] == 0) 
+    if(bitset->array[newsize - 1] == 0)
         newsize -= 1;
     else
         break;
