@@ -159,6 +159,47 @@ static inline bool nextSetBit(const bitset_t *bitset, size_t *i) {
       }
       return false;
 }
+
+/* iterate over the set bits
+ like so :
+   size_t buffer[256];
+   size_t howmany = 0;
+  for(size_t startfrom = 0; (howmany = nextSetBits(b,buffer,256, &startfrom)) > 0 ; startfrom++) {
+    //.....
+  }
+  */
+static inline size_t nextSetBits(const bitset_t *bitset, size_t *buffer, size_t capacity, size_t * startfrom) {
+      if(capacity == 0) return 0;// sanity check
+      size_t x = *startfrom >> 6;
+      if (x >= bitset->arraysize) {
+          return 0;// nothing more to iterate over
+      }
+      uint64_t w = bitset->array[x];
+      w >>= (*startfrom & 63);
+      size_t howmany = 0;
+      size_t base = x << 6;
+      while(howmany < capacity) {
+            while (w != 0) {
+              uint64_t t = w & (~w + 1);
+              int r = __builtin_ctzll(w);
+              buffer[howmany++] = r + base;
+              if(howmany == capacity) goto end;
+              w ^= t;
+            }
+            x += 1;
+            if(x == bitset->arraysize) {
+              break;
+            }
+            base += 64;
+            w = bitset->array[x];
+      }
+      end:
+      if(howmany > 0) {
+        *startfrom = buffer[howmany - 1];
+      }
+      return howmany;
+}
+
 typedef bool (*bitset_iterator)(size_t value, void *param);
 
 // return true if uninterrupted

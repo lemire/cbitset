@@ -61,6 +61,14 @@ size_t iterate(bitset_t *b1) {
   return sum;
 }
 
+size_t iterateb(bitset_t *b1) {
+  size_t sum = 0;
+  for(size_t i = 0; nextSetBit(b1,&i) ; i++) {
+    sum+=i;
+  }
+  return sum;
+}
+
 bool incr(size_t value, void * param) {
   size_t sum;
   memcpy(&sum, param, sizeof(size_t));
@@ -75,7 +83,42 @@ size_t iterate2(bitset_t *b1) {
   return sum;
 }
 
+bool incrb(size_t value, void * param) {
+  size_t sum;
+  memcpy(&sum, param, sizeof(size_t));
+  sum += value;
+  memcpy(param, &sum, sizeof(size_t));
+  return true;
+}
 
+size_t iterate2b(bitset_t *b1) {
+  size_t sum = 0;
+  bitset_for_each(b1,incrb,&sum);
+  return sum;
+}
+
+size_t iterate3(bitset_t *b1) {
+  size_t sum = 0;
+  size_t buffer[256];
+  size_t howmany = 0;
+  for(size_t startfrom = 0; (howmany = nextSetBits(b1,buffer,256, &startfrom)) > 0 ; startfrom++) {
+       for(size_t i = 0; i < howmany ; i++) {
+         sum++;
+       }
+  }
+  return sum;
+}
+size_t iterate3b(bitset_t *b1) {
+  size_t sum = 0;
+  size_t buffer[256];
+  size_t howmany = 0;
+  for(size_t startfrom = 0; (howmany = nextSetBits(b1,buffer,256, &startfrom)) > 0 ; startfrom++) {
+       for(size_t i = 0; i < howmany ; i++) {
+         sum += buffer[i];
+       }
+  }
+  return sum;
+}
 
 int main() {
   int repeat = 10;
@@ -90,6 +133,11 @@ int main() {
   BEST_TIME_CHECK(bitset_count(b1),count,repeat);
   BEST_TIME_CHECK(iterate(b1),count,repeat);
   BEST_TIME_CHECK(iterate2(b1),count,repeat);
+  BEST_TIME_CHECK(iterate3(b1),count,repeat);
+  size_t expected = iterate3b(b1);
+  BEST_TIME_CHECK(iterateb(b1),expected,repeat);
+  BEST_TIME_CHECK(iterate2b(b1),expected,repeat);
+  BEST_TIME_CHECK(iterate3b(b1),expected,repeat);
 
 
   bitset_free(b1);
