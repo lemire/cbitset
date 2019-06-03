@@ -119,6 +119,16 @@ void bitset_inplace_intersection(bitset_t * restrict b1, const bitset_t * restri
 size_t bitset_intersection_count(const bitset_t * restrict b1, const bitset_t * restrict b2);
 
 
+/* returns true if the bitsets contain no common elements */
+bool bitsets_disjoint(const bitset_t * b1, const bitset_t * b2);
+
+/* returns true if the bitsets contain any common elements */
+bool bitsets_intersect(const bitset_t * b1, const bitset_t * b2);
+
+/* returns true if b1 contains all of the set bits of b2 */
+bool bitset_contains_all(const bitset_t * restrict b1, const bitset_t * restrict b2);
+
+
 /* compute the difference in-place (to b1), to generate a new bitset first call bitset_copy */
 void bitset_inplace_difference(bitset_t * restrict b1, const bitset_t * restrict b2);
 
