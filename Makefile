@@ -22,4 +22,4 @@ lemirebenchmark: bitset.o ./benchmarks/lemirebenchmark.c $(HEADERS)
 benchmark: bitset.o ./benchmarks/benchmark.c $(HEADERS)
 	$(CC) $(CFLAGS) -o benchmark ./benchmarks/benchmark.c bitset.o -Iinclude
 clean:
-	rm -f  *.o unit benchmark
+	rm -f  *.o unit benchmark lemirebenchmark
