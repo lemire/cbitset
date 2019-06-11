@@ -218,7 +218,7 @@ bool bitsets_intersect(const bitset_t * b1, const bitset_t * b2) {
 }
 
 /* Returns true if b has any bits set in or after b->array[starting_loc]. */
-static bool any_bits_set(const bitset_t * restrict b, size_t starting_loc) {
+static bool any_bits_set(const bitset_t * b, size_t starting_loc) {
   if(starting_loc >= b->arraysize) {
     return false;
   }
@@ -232,7 +232,7 @@ static bool any_bits_set(const bitset_t * restrict b, size_t starting_loc) {
 /* Returns true if b1 has all of b2's bits set.
  *
  * Performs early out if a bit is found in b2 that is not found in b1. */
-bool bitset_contains_all(const bitset_t * restrict b1, const bitset_t * restrict b2) {
+bool bitset_contains_all(const bitset_t * b1, const bitset_t * b2) {
  for(size_t k = 0; k < b1->arraysize; k++) {
     if((b1->array[k] & b2->array[k]) != b2->array[k]) {
       return false;

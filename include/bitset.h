@@ -126,7 +126,7 @@ bool bitsets_disjoint(const bitset_t * b1, const bitset_t * b2);
 bool bitsets_intersect(const bitset_t * b1, const bitset_t * b2);
 
 /* returns true if b1 contains all of the set bits of b2 */
-bool bitset_contains_all(const bitset_t * restrict b1, const bitset_t * restrict b2);
+bool bitset_contains_all(const bitset_t * b1, const bitset_t * b2);
 
 
 /* compute the difference in-place (to b1), to generate a new bitset first call bitset_copy */
