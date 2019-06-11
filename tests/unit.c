@@ -139,8 +139,8 @@ void test_counts() {
 }
 
 /* Creates 2 bitsets, one containing even numbers the other odds.
-   Checks bitsets_disjoint() returns that they are disjoint, then sets a common
-   bit between both sets and checks that they are no longer disjoint. */
+Checks bitsets_disjoint() returns that they are disjoint, then sets a common
+bit between both sets and checks that they are no longer disjoint. */
 void test_disjoint() {
   bitset_t * evens = bitset_create();
   bitset_t * odds  = bitset_create();
@@ -154,8 +154,8 @@ void test_disjoint() {
 
   assert(bitsets_disjoint(evens, odds));
 
-  bitset_set(evens, 1001);
-  bitset_set(odds, 1001);
+  bitset_set(evens, 501);
+  bitset_set(odds, 501);
 
   assert(!bitsets_disjoint(evens, odds));
 
@@ -164,8 +164,8 @@ void test_disjoint() {
 }
 
 /* Creates 2 bitsets, one containing even numbers the other odds.
-   Checks that bitsets_intersect() returns that they do not intersect, then sets
-   a common bit and checks that they now intersect. */
+Checks that bitsets_intersect() returns that they do not intersect, then sets
+a common bit and checks that they now intersect. */
 void test_intersects() {
   bitset_t * evens = bitset_create();
   bitset_t * odds  = bitset_create();
@@ -189,9 +189,9 @@ void test_intersects() {
 }
 
 /* Creates 2 bitsets, one with all bits from 0->1000 set, the other with only
-   even bits set in the same range. Checks that the bitset_contains_all()
-   returns true, then sets a single bit at 1001 in the prior subset and checks that
-   bitset_contains_all() returns false. */
+even bits set in the same range. Checks that the bitset_contains_all()
+returns true, then sets a single bit at 1001 in the prior subset and checks that
+bitset_contains_all() returns false. */
 void test_contains_all() {
   bitset_t * superset = bitset_create();
   bitset_t * subset   = bitset_create();
