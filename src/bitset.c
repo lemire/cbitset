@@ -189,6 +189,62 @@ size_t bitset_maximum(const bitset_t *bitset) {
   return 0;
 }
 
+/* Returns true if bitsets share no common elements, false otherwise.
+ *
+ * Performs early-out if common element found. */
+bool bitsets_disjoint(const bitset_t * b1, const bitset_t * b2) {
+  size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
+
+  for(size_t k = 0; k < minlength; k++) {
+    if((b1->array[k] & b2->array[k]) != 0)
+      return false;
+  }
+  return true;
+}
+
+
+/* Returns true if bitsets contain at least 1 common element, false if they are
+ * disjoint.
+ *
+ * Performs early-out if common element found. */
+bool bitsets_intersect(const bitset_t * b1, const bitset_t * b2) {
+  size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
+
+  for(size_t k = 0; k < minlength; k++) {
+    if((b1->array[k] & b2->array[k]) != 0)
+      return true;
+  }
+  return false;
+}
+
+/* Returns true if b has any bits set in or after b->array[starting_loc]. */
+static bool any_bits_set(const bitset_t * b, size_t starting_loc) {
+  if(starting_loc >= b->arraysize) {
+    return false;
+  }
+  for(size_t k = starting_loc; k < b->arraysize; k++) {
+    if(b->array[k] != 0)
+      return false;
+  }
+  return true;
+}
+
+/* Returns true if b1 has all of b2's bits set.
+ *
+ * Performs early out if a bit is found in b2 that is not found in b1. */
+bool bitset_contains_all(const bitset_t * b1, const bitset_t * b2) {
+ for(size_t k = 0; k < b1->arraysize; k++) {
+    if((b1->array[k] & b2->array[k]) != b2->array[k]) {
+      return false;
+    }
+  }
+  if(b2->arraysize > b1->arraysize) {
+    /* Need to check if b2 has any bits set beyond b1's array */
+    return !any_bits_set(b2, b1->arraysize);
+  }
+  return true;
+}
+
 size_t bitset_union_count(const bitset_t *restrict b1, const bitset_t * restrict b2) {
   size_t answer = 0;
   size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
