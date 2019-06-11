@@ -195,8 +195,8 @@ size_t bitset_maximum(const bitset_t *bitset) {
 bool bitsets_disjoint(const bitset_t * b1, const bitset_t * b2) {
   size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
 
-  for (size_t k = 0; k < minlength; k++) {
-    if ((b1->array[k] & b2->array[k]) != 0)
+  for(size_t k = 0; k < minlength; k++) {
+    if((b1->array[k] & b2->array[k]) != 0)
       return false;
   }
   return true;
@@ -210,8 +210,8 @@ bool bitsets_disjoint(const bitset_t * b1, const bitset_t * b2) {
 bool bitsets_intersect(const bitset_t * b1, const bitset_t * b2) {
   size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
 
-  for (size_t k = 0; k < minlength; k++) {
-    if ((b1->array[k] & b2->array[k]) != 0)
+  for(size_t k = 0; k < minlength; k++) {
+    if((b1->array[k] & b2->array[k]) != 0)
       return true;
   }
   return false;
@@ -219,11 +219,11 @@ bool bitsets_intersect(const bitset_t * b1, const bitset_t * b2) {
 
 /* Returns true if b has any bits set in or after b->array[starting_loc]. */
 static bool any_bits_set(const bitset_t * restrict b, size_t starting_loc) {
-  if (starting_loc > b->arraysize) {
+  if(starting_loc >= b->arraysize) {
     return false;
   }
-  for (size_t k = starting_loc; k < b->arraysize; k++) {
-    if ((b->array[k] & 0xFFFFFFFFFFFFFFFF) != 0)
+  for(size_t k = starting_loc; k < b->arraysize; k++) {
+    if(b->array[k] != 0)
       return false;
   }
   return true;
@@ -233,12 +233,13 @@ static bool any_bits_set(const bitset_t * restrict b, size_t starting_loc) {
  *
  * Performs early out if a bit is found in b2 that is not found in b1. */
 bool bitset_contains_all(const bitset_t * restrict b1, const bitset_t * restrict b2) {
- for (size_t k = 0; k < b1->arraysize; k++) {
-    if ((b1->array[k] & b2->array[k]) != b2->array[k]) {
+ for(size_t k = 0; k < b1->arraysize; k++) {
+    if((b1->array[k] & b2->array[k]) != b2->array[k]) {
       return false;
     }
   }
-  if (b2->arraysize > b1->arraysize) {
+  if(b2->arraysize > b1->arraysize) {
+    /* Need to check if b2 has any bits set beyond b1's array */
     return !any_bits_set(b2, b1->arraysize);
   }
   return true;
