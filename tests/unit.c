@@ -77,6 +77,17 @@ void test_shift_left() {
   }
 }
 
+void test_set_to_val() {
+   bitset_t * b = bitset_create();
+   bitset_set_to_value(b, 1, true);
+   bitset_set_to_value(b, 1, false);
+   bitset_set_to_value(b, 10, false);
+   bitset_set_to_value(b, 10, true);
+   assert(bitset_get(b,10));
+   assert(!bitset_get(b,1));
+   bitset_free(b);
+}
+
 void test_shift_right() {
   for(size_t sh = 0; sh < 256; sh++) {
     bitset_t * b = bitset_create();
@@ -216,6 +227,7 @@ void test_contains_all() {
 
 
 int main() {
+  test_set_to_val();
   test_construct();
   test_union_intersection();
   test_iterate();
