@@ -224,9 +224,9 @@ static bool any_bits_set(const bitset_t * b, size_t starting_loc) {
   }
   for(size_t k = starting_loc; k < b->arraysize; k++) {
     if(b->array[k] != 0)
-      return false;
+      return true;
   }
-  return true;
+  return false;
 }
 
 /* Returns true if b1 has all of b2's bits set.

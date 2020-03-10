@@ -198,6 +198,30 @@ void test_intersects() {
   bitset_free(evens);
   bitset_free(odds);
 }
+/* Create 2 bitsets with different capacity, where the bigger superset
+contains the subset bits plus additional bits after the subset arraysize.
+Checks that the bitset_contains_all() returns false when checking if
+the superset contains all the subset bits, and true in the opposite case. */
+void test_contains_all_different_sizes() {
+  const size_t superset_size = 10;
+  const size_t subset_size = 5;
+
+  bitset_t * superset = bitset_create_with_capacity(superset_size);
+  bitset_t * subset   = bitset_create_with_capacity(subset_size);
+
+  bitset_set(superset, 1);
+  bitset_set(superset, subset_size - 1);
+  bitset_set(superset, subset_size + 1);
+
+  bitset_set(subset, 1);
+  bitset_set(subset, subset_size - 1);
+
+  assert(bitset_contains_all(superset, subset));
+  assert(!bitset_contains_all(subset, superset));
+
+  bitset_free(superset);
+  bitset_free(subset);
+}
 
 /* Creates 2 bitsets, one with all bits from 0->1000 set, the other with only
 even bits set in the same range. Checks that the bitset_contains_all()
@@ -239,5 +263,6 @@ int main() {
   test_disjoint();
   test_intersects();
   test_contains_all();
+  test_contains_all_different_sizes();
   printf("All asserts passed. Code is probably ok.\n");
 }
