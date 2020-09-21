@@ -21,5 +21,5 @@ make
 ./unit
 ```
 
-Prerequisites: GCC-compatible compiler
+Prerequisites: C11-compatible compiler
 
