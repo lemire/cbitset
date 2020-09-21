@@ -2,6 +2,15 @@
 #define CBITSET_PORTABILITY_H
 #include <stdint.h>
 
+// For compatibility with MSVC with teh use of `restrict`
+#if defined(__INTEL_COMPILER) || defined(__GNUC__) || defined(__GNUG__) || defined(__clang__)
+#define RESTRICT restrict
+#elif defined(_MSC_VER)
+#define RESTRICT __restrict
+#else
+#define RESTRICT
+#endif // defined(__INTEL_COMPILER) || defined(__GNUC__) || defined(__GNUG__) || defined(__clang__)
+
 #ifdef _MSC_VER
 /* Microsoft C/C++-compatible compiler */
 #include <intrin.h>
