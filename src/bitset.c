@@ -245,7 +245,7 @@ bool bitset_contains_all(const bitset_t * b1, const bitset_t * b2) {
   return true;
 }
 
-size_t bitset_union_count(const bitset_t *RESTRICT b1, const bitset_t * RESTRICT b2) {
+size_t bitset_union_count(const bitset_t * RESTRICT b1, const bitset_t * RESTRICT b2) {
   size_t answer = 0;
   size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
   size_t k = 0;
@@ -304,7 +304,7 @@ size_t bitset_intersection_count(const bitset_t * RESTRICT b1, const bitset_t * 
   return answer;
 }
 
-void bitset_inplace_difference(bitset_t *RESTRICT b1, const bitset_t * RESTRICT b2) {
+void bitset_inplace_difference(bitset_t * RESTRICT b1, const bitset_t * RESTRICT b2) {
   size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
   size_t k = 0;
   for( ; k < minlength; ++k) {
@@ -313,7 +313,7 @@ void bitset_inplace_difference(bitset_t *RESTRICT b1, const bitset_t * RESTRICT 
 }
 
 
-size_t  bitset_difference_count(const bitset_t *RESTRICT b1, const bitset_t * RESTRICT b2) {
+size_t  bitset_difference_count(const bitset_t * RESTRICT b1, const bitset_t * RESTRICT b2) {
   size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
   size_t k = 0;
   size_t answer = 0;
@@ -326,7 +326,7 @@ size_t  bitset_difference_count(const bitset_t *RESTRICT b1, const bitset_t * RE
   return answer;
 }
 
-bool bitset_inplace_symmetric_difference(bitset_t *RESTRICT b1, const bitset_t * RESTRICT b2) {
+bool bitset_inplace_symmetric_difference(bitset_t * RESTRICT b1, const bitset_t * RESTRICT b2) {
   size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
   size_t k = 0;
   for( ; k < minlength; ++k) {
@@ -340,7 +340,7 @@ bool bitset_inplace_symmetric_difference(bitset_t *RESTRICT b1, const bitset_t *
   return true;
 }
 
-size_t  bitset_symmetric_difference_count(const bitset_t *RESTRICT b1, const bitset_t * RESTRICT b2) {
+size_t  bitset_symmetric_difference_count(const bitset_t * RESTRICT b1, const bitset_t * RESTRICT b2) {
   size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
   size_t k = 0;
   size_t answer = 0;
