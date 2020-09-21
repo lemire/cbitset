@@ -4,9 +4,9 @@
 
 // For compatibility with MSVC with the use of `restrict`
 #if defined(__INTEL_COMPILER) || defined(__GNUC__) || defined(__GNUG__) || defined(__clang__)
-#define RESTRICT restrict
+#define CBITSET_RESTRICT restrict
 #elif defined(_MSC_VER)
-#define RESTRICT __restrict
+#define CBITSET_RESTRICT __restrict
 #else
 #define RESTRICT
 #endif // defined(__INTEL_COMPILER) || defined(__GNUC__) || defined(__GNUG__) || defined(__clang__)
