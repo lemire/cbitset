@@ -9,7 +9,7 @@
 #include "portability.h"
 
 struct bitset_s {
-    uint64_t * RESTRICT array;
+    uint64_t * CBITSET_RESTRICT array;
     size_t arraysize;
     size_t capacity;
 
@@ -126,16 +126,16 @@ size_t bitset_maximum(const bitset_t *bitset);
 
 
 /* compute the union in-place (to b1), returns true if successful, to generate a new bitset first call bitset_copy */
-bool bitset_inplace_union(bitset_t * RESTRICT b1, const bitset_t * RESTRICT b2);
+bool bitset_inplace_union(bitset_t * CBITSET_RESTRICT b1, const bitset_t * CBITSET_RESTRICT b2);
 
 /* report the size of the union (without materializing it) */
-size_t bitset_union_count(const bitset_t * RESTRICT b1, const bitset_t * RESTRICT b2);
+size_t bitset_union_count(const bitset_t * CBITSET_RESTRICT b1, const bitset_t * CBITSET_RESTRICT b2);
 
 /* compute the intersection in-place (to b1), to generate a new bitset first call bitset_copy */
-void bitset_inplace_intersection(bitset_t * RESTRICT b1, const bitset_t * RESTRICT b2);
+void bitset_inplace_intersection(bitset_t * CBITSET_RESTRICT b1, const bitset_t * CBITSET_RESTRICT b2);
 
 /* report the size of the intersection (without materializing it) */
-size_t bitset_intersection_count(const bitset_t * RESTRICT b1, const bitset_t * RESTRICT b2);
+size_t bitset_intersection_count(const bitset_t * CBITSET_RESTRICT b1, const bitset_t * CBITSET_RESTRICT b2);
 
 
 /* returns true if the bitsets contain no common elements */
@@ -149,16 +149,16 @@ bool bitset_contains_all(const bitset_t * b1, const bitset_t * b2);
 
 
 /* compute the difference in-place (to b1), to generate a new bitset first call bitset_copy */
-void bitset_inplace_difference(bitset_t * RESTRICT b1, const bitset_t * RESTRICT b2);
+void bitset_inplace_difference(bitset_t * CBITSET_RESTRICT b1, const bitset_t * CBITSET_RESTRICT b2);
 
 /* compute the size of the difference */
-size_t  bitset_difference_count(const bitset_t * RESTRICT b1, const bitset_t * RESTRICT b2) ;
+size_t  bitset_difference_count(const bitset_t * CBITSET_RESTRICT b1, const bitset_t * CBITSET_RESTRICT b2) ;
 
 /* compute the symmetric difference in-place (to b1), return true if successful, to generate a new bitset first call bitset_copy */
-bool bitset_inplace_symmetric_difference(bitset_t * RESTRICT b1, const bitset_t * RESTRICT b2);
+bool bitset_inplace_symmetric_difference(bitset_t * CBITSET_RESTRICT b1, const bitset_t * CBITSET_RESTRICT b2);
 
 /* compute the size of the symmetric difference  */
-size_t  bitset_symmetric_difference_count(const bitset_t * RESTRICT b1, const bitset_t * RESTRICT b2);
+size_t  bitset_symmetric_difference_count(const bitset_t * CBITSET_RESTRICT b1, const bitset_t * CBITSET_RESTRICT b2);
 
 /* iterate over the set bits
  like so :
