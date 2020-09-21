@@ -28,11 +28,10 @@ bitset_t *bitset_create_with_capacity( size_t size ) {
   }
   bitset->arraysize = (size + sizeof(uint64_t) * 8 - 1) / (sizeof(uint64_t) * 8);
   bitset->capacity = bitset->arraysize;
-  if ((bitset->array = (uint64_t *) malloc(sizeof(uint64_t) * bitset->arraysize)) == NULL) {
+  if ((bitset->array = (uint64_t *) calloc(sizeof(uint64_t) * bitset->arraysize)) == NULL) {
     free( bitset);
     return NULL;
   }
-  memset(bitset->array,0,sizeof(uint64_t) * bitset->arraysize);
   return bitset;
 }
 
