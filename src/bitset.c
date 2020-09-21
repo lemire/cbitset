@@ -28,7 +28,7 @@ bitset_t *bitset_create_with_capacity( size_t size ) {
   }
   bitset->arraysize = (size + sizeof(uint64_t) * 8 - 1) / (sizeof(uint64_t) * 8);
   bitset->capacity = bitset->arraysize;
-  if ((bitset->array = (uint64_t *) calloc(sizeof(uint64_t) * bitset->arraysize)) == NULL) {
+  if ((bitset->array = (uint64_t *) calloc(bitset->arraysize, sizeof(uint64_t))) == NULL) {
     free( bitset);
     return NULL;
   }
