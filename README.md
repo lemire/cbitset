@@ -13,6 +13,7 @@ Usage in C:
 bitset_t * b = bitset_create();
 bitset_set(b,10);
 bitset_get(b,10);// returns true
+bitset_free(b); // frees memory
 ```
 
 To run tests:
