@@ -16,11 +16,28 @@ bitset_get(b,10);// returns true
 bitset_free(b); // frees memory
 ```
 
+## CMake
+
+```
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release  
+ctest .
+```
+
+The cmake build also supports installation. The header files will be installed in a distinct subdirectory (cbitset).
+
+
+## Old-school Makefiles
+
 To run tests:
 ```bash
 make
 ./unit
 ```
 
-Prerequisites: C11-compatible compiler
+## Prerequisites
+
+C11-compatible compiler
 

@@ -19,4 +19,4 @@ jobs:
           cmake --build .   &&
           ctest -j --output-on-failure  &&
           make install  &&
-          echo -e '#include <cbitset/bitset.h>\nint main(int argc,char**argv) {bitset_t * b = bitset_create(); bitset_set(b,10); bitset_get(b,10); bitset_free(b); }' > tmp.c && cc -Idestination -Ldestination/lib -std=c11 -Wl,-rpath,destination/lib -o linkandrun tmp.c -lcbitset && ./linkandrun 
+          echo -e '#include <cbitset/bitset.h>\nint main(int argc,char**argv) {bitset_t * b = bitset_create(); bitset_set(b,10); bitset_get(b,10); bitset_free(b); }' > tmp.c && cc -Idestination/include -Ldestination/lib -std=c11 -Wl,-rpath,destination/lib -o linkandrun tmp.c -lcbitset && ./linkandrun 
