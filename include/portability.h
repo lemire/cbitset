@@ -3,11 +3,11 @@
 #include <stdint.h>
 
 // For compatibility with MSVC with the use of `restrict`
-#if defined(__STDC_VERSION__ >= 199901L) || (defined(__GNUC__) && defined(__STDC_VERSION__ ))
+#if (__STDC_VERSION__ >= 199901L) || (defined(__GNUC__) && defined(__STDC_VERSION__ ))
 #define CBITSET_RESTRICT restrict
 #else
 #define CBITSET_RESTRICT
-#endif // defined(__STDC_VERSION__ >= 199901L) || (defined(__GNUC__) && defined(__STDC_VERSION__ ))
+#endif // (__STDC_VERSION__ >= 199901L) || (defined(__GNUC__) && defined(__STDC_VERSION__ ))
 
 #ifdef _MSC_VER
 /* Microsoft C/C++-compatible compiler */
