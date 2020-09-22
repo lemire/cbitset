@@ -21,5 +21,5 @@ make
 ./unit
 ```
 
-Prerequisites: C11-compatible compiler
+Prerequisites: C11-compatible compiler (MSVC Users, please have a look at [C11 and C17 Standard Support Arriving in MSVC](https://devblogs.microsoft.com/cppblog/c11-and-c17-standard-support-arriving-in-msvc/)).
 
