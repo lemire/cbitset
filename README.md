@@ -13,7 +13,23 @@ Usage in C:
 bitset_t * b = bitset_create();
 bitset_set(b,10);
 bitset_get(b,10);// returns true
+bitset_free(b); // frees memory
 ```
+
+## CMake
+
+```
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release  
+ctest .
+```
+
+The cmake build also supports installation. The header files will be installed in a distinct subdirectory (cbitset).
+
+
+## Old-school Makefiles
 
 To run tests:
 ```bash
@@ -21,5 +37,9 @@ make
 ./unit
 ```
 
-Prerequisites: C11-compatible compiler (MSVC Users, please have a look at [C11 and C17 Standard Support Arriving in MSVC](https://devblogs.microsoft.com/cppblog/c11-and-c17-standard-support-arriving-in-msvc/)).
+## Prerequisites
+
+C11-compatible compiler
+
+Visual Studio now supports the [C11 and C17 standards](https://devblogs.microsoft.com/cppblog/c11-and-c17-standard-support-arriving-in-msvc/).
 
