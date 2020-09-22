@@ -3,9 +3,9 @@
 #
 .SUFFIXES: .cpp .o .c .h
 ifeq ($(DEBUG),1)
-CFLAGS = -fPIC  -std=c99 -ggdb -march=native -Wall -Wextra -Wshadow -fsanitize=undefined  -fno-omit-frame-pointer -fsanitize=address
+CFLAGS = -fPIC  -std=c99 -ggdb -Wall -Wextra -Wshadow -fsanitize=undefined  -fno-omit-frame-pointer -fsanitize=address
 else
-CFLAGS = -fPIC -std=c99 -O3  -march=native -Wall -Wextra -Wshadow
+CFLAGS = -fPIC -std=c99 -O3  -Wall -Wextra -Wshadow
 endif # debug
 OBJECTS=bitset.o
 all: unit benchmark lemirebenchmark $(OBJECTS)
@@ -22,4 +22,4 @@ lemirebenchmark: bitset.o ./benchmarks/lemirebenchmark.c $(HEADERS)
 benchmark: bitset.o ./benchmarks/benchmark.c $(HEADERS)
 	$(CC) $(CFLAGS) -o benchmark ./benchmarks/benchmark.c bitset.o -Iinclude
 clean:
-	rm -f  *.o unit benchmark
+	rm -f  *.o unit benchmark lemirebenchmark

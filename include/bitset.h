@@ -1,6 +1,6 @@
 #ifndef BITSET_H
 #define BITSET_H
-
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -19,7 +19,7 @@ struct bitset_s {
 typedef struct bitset_s bitset_t;
 
 /* Create a new bitset. Return NULL in case of failure. */
-bitset_t *bitset_create();
+bitset_t *bitset_create( void );
 
 /* Create a new bitset able to contain size bits. Return NULL in case of failure. */
 bitset_t *bitset_create_with_capacity( size_t size );
@@ -88,6 +88,25 @@ static inline void bitset_set(bitset_t *bitset,  size_t i ) {
   bitset->array[shiftedi] |= ((uint64_t)1) << (i % 64);
 }
 
+/* Set the ith bit to the specified value. Attempts to resize the bitset if needed (may silently fail) */
+static inline void bitset_set_to_value(bitset_t *bitset,  size_t i, bool flag) {
+  size_t shiftedi = i >> 6;
+  uint64_t mask = ((uint64_t)1) << (i % 64);
+  uint64_t dynmask = ((uint64_t)flag) << (i % 64);
+  if (shiftedi >= bitset->arraysize) {
+    if( ! bitset_grow(bitset,  shiftedi + 1) ) {
+        return;
+    }
+  }
+  uint64_t w = bitset->array[shiftedi];
+  w &= ~mask;
+  w |= dynmask; 
+  bitset->array[shiftedi] = w;
+}
+
+
+
+
 /* Get the value of the ith bit.  */
 static inline bool bitset_get(const bitset_t *bitset,  size_t i ) {
   size_t shiftedi = i >> 6;
@@ -97,7 +116,7 @@ static inline bool bitset_get(const bitset_t *bitset,  size_t i ) {
   return ( bitset->array[shiftedi] & ( ((uint64_t)1) << (i % 64))) != 0 ;
 }
 
-/* Count number of bit sets.  */
+/* Count number of bits set.  */
 size_t bitset_count(const bitset_t *bitset);
 
 /* Find the index of the first bit set.  */
@@ -118,6 +137,16 @@ void bitset_inplace_intersection(bitset_t * restrict b1, const bitset_t * restri
 
 /* report the size of the intersection (without materializing it) */
 size_t bitset_intersection_count(const bitset_t * restrict b1, const bitset_t * restrict b2);
+
+
+/* returns true if the bitsets contain no common elements */
+bool bitsets_disjoint(const bitset_t * b1, const bitset_t * b2);
+
+/* returns true if the bitsets contain any common elements */
+bool bitsets_intersect(const bitset_t * b1, const bitset_t * b2);
+
+/* returns true if b1 contains all of the set bits of b2 */
+bool bitset_contains_all(const bitset_t * b1, const bitset_t * b2);
 
 
 /* compute the difference in-place (to b1), to generate a new bitset first call bitset_copy */
@@ -160,6 +189,47 @@ static inline bool nextSetBit(const bitset_t *bitset, size_t *i) {
       }
       return false;
 }
+
+/* iterate over the set bits
+ like so :
+   size_t buffer[256];
+   size_t howmany = 0;
+  for(size_t startfrom = 0; (howmany = nextSetBits(b,buffer,256, &startfrom)) > 0 ; startfrom++) {
+    //.....
+  }
+  */
+static inline size_t nextSetBits(const bitset_t *bitset, size_t *buffer, size_t capacity, size_t * startfrom) {
+      if(capacity == 0) return 0;// sanity check
+      size_t x = *startfrom >> 6;
+      if (x >= bitset->arraysize) {
+          return 0;// nothing more to iterate over
+      }
+      uint64_t w = bitset->array[x];
+      w >>= (*startfrom & 63);
+      size_t howmany = 0;
+      size_t base = x << 6;
+      while(howmany < capacity) {
+            while (w != 0) {
+              uint64_t t = w & (~w + 1);
+              int r = __builtin_ctzll(w);
+              buffer[howmany++] = r + base;
+              if(howmany == capacity) goto end;
+              w ^= t;
+            }
+            x += 1;
+            if(x == bitset->arraysize) {
+              break;
+            }
+            base += 64;
+            w = bitset->array[x];
+      }
+      end:
+      if(howmany > 0) {
+        *startfrom = buffer[howmany - 1];
+      }
+      return howmany;
+}
+
 typedef bool (*bitset_iterator)(size_t value, void *param);
 
 // return true if uninterrupted

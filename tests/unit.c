@@ -77,6 +77,17 @@ void test_shift_left() {
   }
 }
 
+void test_set_to_val() {
+   bitset_t * b = bitset_create();
+   bitset_set_to_value(b, 1, true);
+   bitset_set_to_value(b, 1, false);
+   bitset_set_to_value(b, 10, false);
+   bitset_set_to_value(b, 10, true);
+   assert(bitset_get(b,10));
+   assert(!bitset_get(b,1));
+   bitset_free(b);
+}
+
 void test_shift_right() {
   for(size_t sh = 0; sh < 256; sh++) {
     bitset_t * b = bitset_create();
@@ -138,8 +149,109 @@ void test_counts() {
   bitset_free(b2);
 }
 
+/* Creates 2 bitsets, one containing even numbers the other odds.
+Checks bitsets_disjoint() returns that they are disjoint, then sets a common
+bit between both sets and checks that they are no longer disjoint. */
+void test_disjoint() {
+  bitset_t * evens = bitset_create();
+  bitset_t * odds  = bitset_create();
+
+  for(int i = 0; i < 1000; i++) {
+    if(i % 2 == 0)
+      bitset_set(evens, i);
+    else
+      bitset_set(odds, i);
+  }
+
+  assert(bitsets_disjoint(evens, odds));
+
+  bitset_set(evens, 501);
+  bitset_set(odds, 501);
+
+  assert(!bitsets_disjoint(evens, odds));
+
+  bitset_free(evens);
+  bitset_free(odds);
+}
+
+/* Creates 2 bitsets, one containing even numbers the other odds.
+Checks that bitsets_intersect() returns that they do not intersect, then sets
+a common bit and checks that they now intersect. */
+void test_intersects() {
+  bitset_t * evens = bitset_create();
+  bitset_t * odds  = bitset_create();
+
+  for(int i = 0; i < 1000; i++) {
+    if(i % 2 == 0)
+      bitset_set(evens, i);
+    else
+      bitset_set(odds, i);
+  }
+
+  assert(!bitsets_intersect(evens, odds));
+
+  bitset_set(evens, 1001);
+  bitset_set(odds, 1001);
+
+  assert(bitsets_intersect(evens, odds));
+
+  bitset_free(evens);
+  bitset_free(odds);
+}
+/* Create 2 bitsets with different capacity, where the bigger superset
+contains the subset bits plus additional bits after the subset arraysize.
+Checks that the bitset_contains_all() returns false when checking if
+the superset contains all the subset bits, and true in the opposite case. */
+void test_contains_all_different_sizes() {
+  const size_t superset_size = 10;
+  const size_t subset_size = 5;
+
+  bitset_t * superset = bitset_create_with_capacity(superset_size);
+  bitset_t * subset   = bitset_create_with_capacity(subset_size);
+
+  bitset_set(superset, 1);
+  bitset_set(superset, subset_size - 1);
+  bitset_set(superset, subset_size + 1);
+
+  bitset_set(subset, 1);
+  bitset_set(subset, subset_size - 1);
+
+  assert(bitset_contains_all(superset, subset));
+  assert(!bitset_contains_all(subset, superset));
+
+  bitset_free(superset);
+  bitset_free(subset);
+}
+
+/* Creates 2 bitsets, one with all bits from 0->1000 set, the other with only
+even bits set in the same range. Checks that the bitset_contains_all()
+returns true, then sets a single bit at 1001 in the prior subset and checks that
+bitset_contains_all() returns false. */
+void test_contains_all() {
+  bitset_t * superset = bitset_create();
+  bitset_t * subset   = bitset_create();
+
+  for(int i = 0; i < 1000; i++) {
+    bitset_set(superset, i);
+    if(i % 2 == 0)
+      bitset_set(subset, i);
+  }
+
+  assert(bitset_contains_all(superset, subset));
+  assert(!bitset_contains_all(subset, superset));
+
+  bitset_set(subset, 1001);
+
+  assert(!bitset_contains_all(superset, subset));
+  assert(!bitset_contains_all(subset, superset));
+
+  bitset_free(superset);
+  bitset_free(subset);
+}
+
 
 int main() {
+  test_set_to_val();
   test_construct();
   test_union_intersection();
   test_iterate();
@@ -148,5 +260,9 @@ int main() {
   test_counts();
   test_shift_right();
   test_shift_left();
+  test_disjoint();
+  test_intersects();
+  test_contains_all();
+  test_contains_all_different_sizes();
   printf("All asserts passed. Code is probably ok.\n");
 }
