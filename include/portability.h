@@ -3,13 +3,11 @@
 #include <stdint.h>
 
 // For compatibility with MSVC with the use of `restrict`
-#if defined(__INTEL_COMPILER) || defined(__GNUC__) || defined(__GNUG__) || defined(__clang__) || (__STDC_VERSION__ >= 199901L)
+#if defined(__STDC_VERSION__ >= 199901L) || (defined(__GNUC__) && defined(__STDC_VERSION__ ))
 #define CBITSET_RESTRICT restrict
-#elif defined(_MSC_VER)
-#define CBITSET_RESTRICT __restrict
 #else
-#define RESTRICT
-#endif // defined(__INTEL_COMPILER) || defined(__GNUC__) || defined(__GNUG__) || defined(__clang__) || (__STDC_VERSION__ >= 199901L)
+#define CBITSET_RESTRICT
+#endif // defined(__STDC_VERSION__ >= 199901L) || (defined(__GNUC__) && defined(__STDC_VERSION__ ))
 
 #ifdef _MSC_VER
 /* Microsoft C/C++-compatible compiler */
