@@ -41,3 +41,5 @@ make
 
 C11-compatible compiler
 
+Visual Studio now supports the [C11 and C17 standards](https://devblogs.microsoft.com/cppblog/c11-and-c17-standard-support-arriving-in-msvc/).
+
