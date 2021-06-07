@@ -60,7 +60,12 @@ static inline int __builtin_clz(int input_num) {
 
 /* result might be undefined when input_num is zero */
 static inline int __builtin_popcountll(unsigned long long input_num) {
-#ifdef _WIN64 // highly recommended!!!
+#if defined(_M_ARM64) || defined(_M_ARM)
+  input_num = input_num - ((input_num >> 1) & 0x5555555555555555);
+  input_num = (input_num & 0x3333333333333333) + ((input_num >> 2) & 0x3333333333333333);
+  input_num = ((input_num + (input_num >> 4)) & 0x0F0F0F0F0F0F0F0F);
+  return (uint32_t)((input_num * (0x0101010101010101)) >> 56);
+#elif defined(_WIN64) // highly recommended!!!
     return (int)__popcnt64(input_num);
 #else // if we must support 32-bit Windows
     return (int)(__popcnt((uint32_t)input_num) + __popcnt((uint32_t)(input_num >> 32)));
