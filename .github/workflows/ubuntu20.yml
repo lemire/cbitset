@@ -9,8 +9,6 @@ jobs:
       - uses: actions/checkout@v2
       - name: Setup cmake
         uses: jwlawson/actions-setup-cmake@v1.9
-        with:
-          cmake-version: '3.9.x'
       - name: Use cmake
         run: |
           mkdir build &&
