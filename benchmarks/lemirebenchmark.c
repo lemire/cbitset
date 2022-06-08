@@ -72,6 +72,7 @@ size_t iterateb(bitset_t *b1) {
 }
 
 bool incr(size_t value, void *param) {
+  (void)value;
   size_t sum;
   memcpy(&sum, param, sizeof(size_t));
   sum++;

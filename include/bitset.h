@@ -30,6 +30,9 @@ void bitset_free(bitset_t *bitset);
 /* Set all bits to zero. */
 void bitset_clear(bitset_t *bitset);
 
+/* Set all bits to one. */
+void bitset_fill(bitset_t *bitset);
+
 /* Create a copy */
 bitset_t * bitset_copy(const bitset_t *bitset);
 
