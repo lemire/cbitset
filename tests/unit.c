@@ -9,7 +9,7 @@ void test_iterate() {
     bitset_set(b,3*k);
   assert(bitset_count(b) == 1000);
   size_t k = 0;
-  for(size_t i = 0; nextSetBit(b,&i) ; i++) {
+  for(size_t i = 0; bitset_next_set_bit(b,&i) ; i++) {
     assert(i == k);
     k += 3;
   }

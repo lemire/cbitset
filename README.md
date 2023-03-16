@@ -21,6 +21,32 @@ bitset_get(b,10);// returns true
 bitset_free(b); // frees memory
 ```
 
+Advanced example:
+
+
+```C
+    bitset_t *b = bitset_create();
+    for (int k = 0; k < 1000; ++k) {
+        bitset_set(b, 3 * k);
+    }
+    // We have bitset_count(b) == 1000.
+    // We have bitset_get(b, 3) is true
+    // You can iterate through the values:
+    size_t k = 0;
+    for (size_t i = 0; bitset_next_set_bit(b, &i); i++) {
+        // You will have i == k
+        k += 3;
+    }
+    // We support a wide range of operations on two bitsets such as
+    // bitset_inplace_symmetric_difference(b1,b2);
+    // bitset_inplace_symmetric_difference(b1,b2);
+    // bitset_inplace_difference(b1,b2);// should make no difference
+    // bitset_inplace_union(b1,b2);
+    // bitset_inplace_intersection(b1,b2);
+    // bitsets_disjoint
+    // bitsets_intersect
+```
+
 ## CMake
 
 ```

@@ -29,7 +29,7 @@ bitset_t *bitset_create_with_capacity( size_t size ) {
   bitset->arraysize = (size + sizeof(uint64_t) * 8 - 1) / (sizeof(uint64_t) * 8);
   bitset->capacity = bitset->arraysize;
   if ((bitset->array = (uint64_t *) calloc(bitset->arraysize, sizeof(uint64_t))) == NULL) {
-    free( bitset);
+    free(bitset);
     return NULL;
   }
   return bitset;
@@ -42,7 +42,7 @@ bitset_t *bitset_copy( const bitset_t * bitset ) {
   if( ( copy = (bitset_t*) malloc( sizeof( bitset_t ) ) ) == NULL ) {
       return NULL;
   }
-  memcpy(copy,bitset,sizeof(bitset_t));
+  memcpy(copy, bitset, sizeof(bitset_t));
   copy->capacity = copy->arraysize;
   if ((copy->array = (uint64_t *) malloc(sizeof(uint64_t) * bitset->arraysize)) == NULL) {
     free(copy);
@@ -114,19 +114,23 @@ void bitset_free(bitset_t *bitset) {
   free(bitset);
 }
 /* Resize the bitset so that it can support newarraysize * 64 bits. Return true in case of success, false for failure. */
-bool bitset_resize( bitset_t *bitset,  size_t newarraysize, bool padwithzeroes ) {
+bool bitset_resize(bitset_t *bitset,  size_t newarraysize, bool padwithzeroes) {
+  if(newarraysize > SIZE_MAX/64) { return false; }
   size_t smallest = newarraysize < bitset->arraysize ? newarraysize : bitset->arraysize;
   if (bitset->capacity < newarraysize) {
     uint64_t *newarray;
-    bitset->capacity = newarraysize * 2;
-    if ((newarray = (uint64_t *) realloc(bitset->array, sizeof(uint64_t) * bitset->capacity)) == NULL) {
-      free(bitset->array);
+    size_t newcapacity = bitset->capacity;
+    if(newcapacity == 0) { newcapacity = 1; }
+    while(newcapacity < newarraysize) { newcapacity *= 2; }
+    if ((newarray = (uint64_t *) realloc(bitset->array, sizeof(uint64_t) * newcapacity)) == NULL) {
       return false;
     }
+    bitset->capacity = newcapacity;
     bitset->array = newarray;
   }
-  if (padwithzeroes && (newarraysize > smallest))
+  if (padwithzeroes && (newarraysize > smallest)) {
     memset(bitset->array + smallest,0,sizeof(uint64_t) * (newarraysize - smallest));
+  }
   bitset->arraysize = newarraysize;
   return true; // success!
 }
@@ -136,7 +140,6 @@ bool bitset_resize( bitset_t *bitset,  size_t newarraysize, bool padwithzeroes )
 size_t bitset_count(const bitset_t *bitset) {
     size_t card = 0;
     size_t k = 0;
-    // assumes that long long is 8 bytes
     for(; k + 7 < bitset->arraysize; k+=8) {
         card += __builtin_popcountll(bitset->array[k]);
         card += __builtin_popcountll(bitset->array[k+1]);
@@ -378,7 +381,6 @@ bool bitset_trim(bitset_t * bitset) {
   bitset->arraysize = newsize;
   uint64_t *newarray;
   if ((newarray = (uint64_t *) realloc(bitset->array, sizeof(uint64_t) * bitset->capacity)) == NULL) {
-      free(bitset->array);
       return false;
   }
   bitset->array = newarray;
