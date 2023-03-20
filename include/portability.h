@@ -70,9 +70,9 @@ static inline int cbitset_hamming(unsigned long long input_num) {
 #ifndef CBITSET_INTRINSICS
 #define CBITSET_INTRINSICS 1
 
-inline int cbitset_trailing_zeroes(unsigned long long input_num) { return __builtin_ctzll(input_num); }
-inline int cbitset_leading_zeroes(unsigned long long input_num) { return __builtin_clzll(input_num); }
-inline int cbitset_hamming(unsigned long long input_num) { return __builtin_popcountll(input_num); }
+static inline int cbitset_trailing_zeroes(unsigned long long input_num) { return __builtin_ctzll(input_num); }
+static inline int cbitset_leading_zeroes(unsigned long long input_num) { return __builtin_clzll(input_num); }
+static inline int cbitset_hamming(unsigned long long input_num) { return __builtin_popcountll(input_num); }
 
 #endif
 #endif
