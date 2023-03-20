@@ -197,7 +197,7 @@ size_t bitset_minimum(const bitset_t *bitset) {
   for(size_t k = 0; k < bitset->arraysize; k++) {
     uint64_t w = bitset->array[k];
     if ( w != 0 ) {
-      return __builtin_ctzll(w) + k * 64;
+      return cbitset_trailing_zeroes(w) + k * 64;
     }
   }
   return 0;
