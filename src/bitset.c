@@ -113,15 +113,32 @@ void bitset_free(bitset_t *bitset) {
   free(bitset->array);
   free(bitset);
 }
+
+bool bitset_grow(bitset_t *bitset,  size_t newarraysize) {
+  if(newarraysize < bitset->arraysize) { return false; }
+  if(newarraysize > SIZE_MAX/64) { return false; }
+  if (bitset->capacity < newarraysize) {
+    uint64_t *newarray;
+    size_t newcapacity = bitset->capacity;
+    if(newcapacity == 0) { newcapacity = 1; }
+    while(newcapacity < newarraysize) { newcapacity *= 2; }
+    if ((newarray = (uint64_t *) realloc(bitset->array, sizeof(uint64_t) * newcapacity)) == NULL) {
+      return false;
+    }
+    bitset->capacity = newcapacity;
+    bitset->array = newarray;
+  }
+  memset(bitset->array + bitset->arraysize, 0, sizeof(uint64_t) * (newarraysize - bitset->arraysize));
+  bitset->arraysize = newarraysize;
+  return true; // success!
+}
 /* Resize the bitset so that it can support newarraysize * 64 bits. Return true in case of success, false for failure. */
 bool bitset_resize(bitset_t *bitset,  size_t newarraysize, bool padwithzeroes) {
   if(newarraysize > SIZE_MAX/64) { return false; }
   size_t smallest = newarraysize < bitset->arraysize ? newarraysize : bitset->arraysize;
   if (bitset->capacity < newarraysize) {
     uint64_t *newarray;
-    size_t newcapacity = bitset->capacity;
-    if(newcapacity == 0) { newcapacity = 1; }
-    while(newcapacity < newarraysize) { newcapacity *= 2; }
+    size_t newcapacity = (UINT64_C(0xFFFFFFFFFFFFFFFF) >> cbitset_leading_zeroes(newarraysize)) + 1;
     if ((newarray = (uint64_t *) realloc(bitset->array, sizeof(uint64_t) * newcapacity)) == NULL) {
       return false;
     }
@@ -141,23 +158,23 @@ size_t bitset_count(const bitset_t *bitset) {
     size_t card = 0;
     size_t k = 0;
     for(; k + 7 < bitset->arraysize; k+=8) {
-        card += __builtin_popcountll(bitset->array[k]);
-        card += __builtin_popcountll(bitset->array[k+1]);
-        card += __builtin_popcountll(bitset->array[k+2]);
-        card += __builtin_popcountll(bitset->array[k+3]);
-        card += __builtin_popcountll(bitset->array[k+4]);
-        card += __builtin_popcountll(bitset->array[k+5]);
-        card += __builtin_popcountll(bitset->array[k+6]);
-        card += __builtin_popcountll(bitset->array[k+7]);
+        card += cbitset_hamming(bitset->array[k]);
+        card += cbitset_hamming(bitset->array[k+1]);
+        card += cbitset_hamming(bitset->array[k+2]);
+        card += cbitset_hamming(bitset->array[k+3]);
+        card += cbitset_hamming(bitset->array[k+4]);
+        card += cbitset_hamming(bitset->array[k+5]);
+        card += cbitset_hamming(bitset->array[k+6]);
+        card += cbitset_hamming(bitset->array[k+7]);
     }
     for(; k + 3 < bitset->arraysize; k+=4) {
-        card += __builtin_popcountll(bitset->array[k]);
-        card += __builtin_popcountll(bitset->array[k+1]);
-        card += __builtin_popcountll(bitset->array[k+2]);
-        card += __builtin_popcountll(bitset->array[k+3]);
+        card += cbitset_hamming(bitset->array[k]);
+        card += cbitset_hamming(bitset->array[k+1]);
+        card += cbitset_hamming(bitset->array[k+2]);
+        card += cbitset_hamming(bitset->array[k+3]);
     }
     for(; k < bitset->arraysize; k++) {
-        card += __builtin_popcountll(bitset->array[k]);
+        card += cbitset_hamming(bitset->array[k]);
     }
     return card;
 }
@@ -190,7 +207,7 @@ size_t bitset_maximum(const bitset_t *bitset) {
   for(size_t k = bitset->arraysize ; k > 0 ; k--) {
     uint64_t w = bitset->array[k - 1];
     if ( w != 0 ) {
-      return  63 - __builtin_clzll(w) + (k - 1) * 64;
+      return  63 - cbitset_leading_zeroes(w) + (k - 1) * 64;
     }
   }
   return 0;
@@ -199,7 +216,7 @@ size_t bitset_maximum(const bitset_t *bitset) {
 /* Returns true if bitsets share no common elements, false otherwise.
  *
  * Performs early-out if common element found. */
-bool bitsets_disjoint(const bitset_t * b1, const bitset_t * b2) {
+bool bitsets_disjoint(const bitset_t * CBITSET_RESTRICT b1, const bitset_t * CBITSET_RESTRICT b2) {
   size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
 
   for(size_t k = 0; k < minlength; k++) {
@@ -214,7 +231,7 @@ bool bitsets_disjoint(const bitset_t * b1, const bitset_t * b2) {
  * disjoint.
  *
  * Performs early-out if common element found. */
-bool bitsets_intersect(const bitset_t * b1, const bitset_t * b2) {
+bool bitsets_intersect(const bitset_t * CBITSET_RESTRICT b1, const bitset_t * CBITSET_RESTRICT b2) {
   size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
 
   for(size_t k = 0; k < minlength; k++) {
@@ -239,8 +256,12 @@ static bool any_bits_set(const bitset_t * b, size_t starting_loc) {
 /* Returns true if b1 has all of b2's bits set.
  *
  * Performs early out if a bit is found in b2 that is not found in b1. */
-bool bitset_contains_all(const bitset_t * b1, const bitset_t * b2) {
- for(size_t k = 0; k < b1->arraysize; k++) {
+bool bitset_contains_all(const bitset_t * CBITSET_RESTRICT b1, const bitset_t * CBITSET_RESTRICT b2) {
+  size_t min_size = b1->arraysize;
+  if(b1->arraysize > b2->arraysize) {
+    min_size = b2->arraysize;
+  }
+  for(size_t k = 0; k < min_size; k++) {
     if((b1->array[k] & b2->array[k]) != b2->array[k]) {
       return false;
     }
@@ -257,35 +278,35 @@ size_t bitset_union_count(const bitset_t * CBITSET_RESTRICT b1, const bitset_t *
   size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
   size_t k = 0;
   for( ; k + 3 < minlength; k += 4) {
-    answer += __builtin_popcountll ( b1->array[k] | b2->array[k]);
-    answer += __builtin_popcountll ( b1->array[k+1] | b2->array[k+1]);
-    answer += __builtin_popcountll ( b1->array[k+2] | b2->array[k+2]);
-    answer += __builtin_popcountll ( b1->array[k+3] | b2->array[k+3]);
+    answer += cbitset_hamming ( b1->array[k] | b2->array[k]);
+    answer += cbitset_hamming ( b1->array[k+1] | b2->array[k+1]);
+    answer += cbitset_hamming ( b1->array[k+2] | b2->array[k+2]);
+    answer += cbitset_hamming ( b1->array[k+3] | b2->array[k+3]);
   }
   for( ; k < minlength; ++k) {
-    answer += __builtin_popcountll ( b1->array[k] | b2->array[k]);
+    answer += cbitset_hamming ( b1->array[k] | b2->array[k]);
   }
   if(b2->arraysize > b1->arraysize) {
     //k = b1->arraysize;
     for(; k + 3 < b2->arraysize; k+=4) {
-      answer += __builtin_popcountll (b2->array[k]);
-      answer += __builtin_popcountll (b2->array[k+1]);
-      answer += __builtin_popcountll (b2->array[k+2]);
-      answer += __builtin_popcountll (b2->array[k+3]);
+      answer += cbitset_hamming (b2->array[k]);
+      answer += cbitset_hamming (b2->array[k+1]);
+      answer += cbitset_hamming (b2->array[k+2]);
+      answer += cbitset_hamming (b2->array[k+3]);
     }
     for(; k < b2->arraysize; ++k) {
-      answer += __builtin_popcountll (b2->array[k]);
+      answer += cbitset_hamming (b2->array[k]);
     }
   } else {
     //k = b2->arraysize;
     for(; k  + 3 < b1->arraysize; k+=4) {
-      answer += __builtin_popcountll (b1->array[k]);
-      answer += __builtin_popcountll (b1->array[k+1]);
-      answer += __builtin_popcountll (b1->array[k+2]);
-      answer += __builtin_popcountll (b1->array[k+3]);
+      answer += cbitset_hamming (b1->array[k]);
+      answer += cbitset_hamming (b1->array[k+1]);
+      answer += cbitset_hamming (b1->array[k+2]);
+      answer += cbitset_hamming (b1->array[k+3]);
     }
     for(; k < b1->arraysize; ++k) {
-      answer += __builtin_popcountll (b1->array[k]);
+      answer += cbitset_hamming (b1->array[k]);
     }
   }
   return answer;
@@ -306,7 +327,7 @@ size_t bitset_intersection_count(const bitset_t * CBITSET_RESTRICT b1, const bit
   size_t answer = 0;
   size_t minlength = b1->arraysize < b2->arraysize ? b1->arraysize : b2->arraysize;
   for(size_t k = 0 ; k < minlength; ++k) {
-    answer += __builtin_popcountll ( b1->array[k] & b2->array[k]);
+    answer += cbitset_hamming ( b1->array[k] & b2->array[k]);
   }
   return answer;
 }
@@ -325,10 +346,10 @@ size_t  bitset_difference_count(const bitset_t * CBITSET_RESTRICT b1, const bits
   size_t k = 0;
   size_t answer = 0;
   for( ; k < minlength; ++k) {
-    answer += __builtin_popcountll (b1->array[k] & ~ (b2->array[k]));
+    answer += cbitset_hamming (b1->array[k] & ~ (b2->array[k]));
   }
   for( ; k < b1->arraysize ; ++k) {
-    answer += __builtin_popcountll (b1->array[k]);
+    answer += cbitset_hamming (b1->array[k]);
   }
   return answer;
 }
@@ -352,15 +373,15 @@ size_t  bitset_symmetric_difference_count(const bitset_t * CBITSET_RESTRICT b1, 
   size_t k = 0;
   size_t answer = 0;
   for( ; k < minlength; ++k) {
-    answer += __builtin_popcountll(b1->array[k] ^ b2->array[k]);
+    answer += cbitset_hamming(b1->array[k] ^ b2->array[k]);
   }
   if(b2->arraysize > b1->arraysize) {
     for( ; k < b2->arraysize; ++k) {
-      answer += __builtin_popcountll(b2->array[k]);
+      answer += cbitset_hamming(b2->array[k]);
     }
   } else {
     for( ; k < b1->arraysize; ++k) {
-      answer += __builtin_popcountll(b1->array[k]);
+      answer += cbitset_hamming(b1->array[k]);
     }
   }
   return answer;
@@ -377,12 +398,13 @@ bool bitset_trim(bitset_t * bitset) {
         break;
   }
   if(bitset->capacity == newsize) return true; // nothing to do
-  bitset->capacity = newsize;
-  bitset->arraysize = newsize;
+
   uint64_t *newarray;
-  if ((newarray = (uint64_t *) realloc(bitset->array, sizeof(uint64_t) * bitset->capacity)) == NULL) {
+  if ((newarray = (uint64_t *) realloc(bitset->array, sizeof(uint64_t) * newsize)) == NULL) {
       return false;
   }
   bitset->array = newarray;
+  bitset->capacity = newsize;
+  bitset->arraysize = newsize;
   return true;
 }
