@@ -180,6 +180,7 @@ a common bit and checks that they now intersect. */
 void test_intersects() {
   bitset_t * evens = bitset_create();
   bitset_t * odds  = bitset_create();
+  assert(bitset_empty(evens));
 
   for(int i = 0; i < 1000; i++) {
     if(i % 2 == 0)

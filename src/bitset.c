@@ -205,6 +205,15 @@ bool bitset_inplace_union(bitset_t * CBITSET_RESTRICT b1, const bitset_t * CBITS
   return true;
 }
 
+bool bitset_empty(const bitset_t *bitset) {
+  for(size_t k = 0; k < bitset->arraysize; k++) {
+    if (bitset->array[k] != 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
 size_t bitset_minimum(const bitset_t *bitset) {
   for(size_t k = 0; k < bitset->arraysize; k++) {
     uint64_t w = bitset->array[k];
@@ -212,7 +221,7 @@ size_t bitset_minimum(const bitset_t *bitset) {
       return cbitset_trailing_zeroes(w) + k * 64;
     }
   }
-  return 0;
+  return SIZE_MAX;
 }
 
 size_t bitset_maximum(const bitset_t *bitset) {
