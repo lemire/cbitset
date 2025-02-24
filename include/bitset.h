@@ -196,36 +196,38 @@ inline bool bitset_next_set_bit(const bitset_t *bitset, size_t *i) {
     //.....
   }
   */
-inline size_t bitset_next_set_bits(const bitset_t *bitset, size_t *buffer, size_t capacity, size_t * startfrom) {
-      if(capacity == 0) return 0;// sanity check
-      size_t x = *startfrom / 64;
-      if (x >= bitset->arraysize) {
-          return 0;// nothing more to iterate over
-      }
-      uint64_t w = bitset->array[x];
-      w >>= (*startfrom & 63);
-      size_t howmany = 0;
-      size_t base = x << 6;
-      while(howmany < capacity) {
-            while (w != 0) {
-              uint64_t t = w & (~w + 1);
-              int r = cbitset_trailing_zeroes(w);
-              buffer[howmany++] = r + base;
-              if(howmany == capacity) goto end;
-              w ^= t;
-            }
-            x += 1;
-            if(x == bitset->arraysize) {
-              break;
-            }
-            base += 64;
-            w = bitset->array[x];
-      }
-      end:
-      if(howmany > 0) {
+inline size_t bitset_next_set_bits(const bitset_t *bitset, size_t *buffer,
+                                   size_t capacity, size_t *startfrom) {
+    if (capacity == 0) return 0;  // sanity check
+    size_t x = *startfrom / 64;
+    if (x >= bitset->arraysize) {
+        return 0;  // nothing more to iterate over
+    }
+    uint64_t w = bitset->array[x];
+    // unset low bits inside the word less than *startfrom
+    w &= ~((UINT64_C(1) << (*startfrom & 63)) - 1);
+    size_t howmany = 0;
+    size_t base = x << 6;
+    while (howmany < capacity) {
+        while (w != 0) {
+            uint64_t t = w & (~w + 1);
+            int r = cbitset_trailing_zeroes(w);
+            buffer[howmany++] = r + base;
+            if (howmany == capacity) goto end;
+            w ^= t;
+        }
+        x += 1;
+        if (x == bitset->arraysize) {
+            break;
+        }
+        base += 64;
+        w = bitset->array[x];
+    }
+end:
+    if (howmany > 0) {
         *startfrom = buffer[howmany - 1];
-      }
-      return howmany;
+    }
+    return howmany;
 }
 
 typedef bool (*bitset_iterator)(size_t value, void *param);
