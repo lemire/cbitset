@@ -18,7 +18,7 @@
 #define CBITSET_INTRINSICS 1
 /* wrappers for Visual Studio built-ins that look like gcc built-ins */
 /* result might be undefined when input_num is zero */
-static inline int cbitset_trailing_zeroes(unsigned long long input_num) {
+inline int cbitset_trailing_zeroes(unsigned long long input_num) {
     unsigned long index;
 #ifdef _WIN64 // highly recommended!!!
     _BitScanForward64(&index, input_num);
@@ -35,7 +35,7 @@ static inline int cbitset_trailing_zeroes(unsigned long long input_num) {
 }
 
 /* result might be undefined when input_num is zero */
-static inline int cbitset_leading_zeroes(unsigned long long input_num) {
+inline int cbitset_leading_zeroes(unsigned long long input_num) {
     unsigned long index;
 #ifdef _WIN64 // highly recommended!!!
     _BitScanReverse64(&index, input_num);
@@ -52,7 +52,7 @@ static inline int cbitset_leading_zeroes(unsigned long long input_num) {
 }
 
 /* result might be undefined when input_num is zero */
-static inline int cbitset_hamming(unsigned long long input_num) {
+inline int cbitset_hamming(unsigned long long input_num) {
 #if defined(_M_ARM64) || defined(_M_ARM)
   input_num = input_num - ((input_num >> 1) & 0x5555555555555555);
   input_num = (input_num & 0x3333333333333333) + ((input_num >> 2) & 0x3333333333333333);
@@ -70,9 +70,9 @@ static inline int cbitset_hamming(unsigned long long input_num) {
 #ifndef CBITSET_INTRINSICS
 #define CBITSET_INTRINSICS 1
 
-static inline int cbitset_trailing_zeroes(unsigned long long input_num) { return __builtin_ctzll(input_num); }
-static inline int cbitset_leading_zeroes(unsigned long long input_num) { return __builtin_clzll(input_num); }
-static inline int cbitset_hamming(unsigned long long input_num) { return __builtin_popcountll(input_num); }
+inline int cbitset_trailing_zeroes(unsigned long long input_num) { return __builtin_ctzll(input_num); }
+inline int cbitset_leading_zeroes(unsigned long long input_num) { return __builtin_clzll(input_num); }
+inline int cbitset_hamming(unsigned long long input_num) { return __builtin_popcountll(input_num); }
 
 #endif
 #endif
