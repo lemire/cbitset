@@ -17,7 +17,9 @@ extern inline bool bitset_get(const bitset_t *bitset, size_t i);
 extern inline size_t bitset_size_in_words(const bitset_t *bitset);
 extern inline size_t bitset_size_in_bits(const bitset_t *bitset);
 extern inline size_t bitset_size_in_bytes(const bitset_t *bitset);
-
+extern inline int cbitset_trailing_zeroes(unsigned long long input_num);
+extern inline int cbitset_leading_zeroes(unsigned long long input_num);
+extern inline int cbitset_hamming(unsigned long long input_num);
 /* Create a new bitset. Return NULL in case of failure. */
 bitset_t *bitset_create() {
   bitset_t *bitset = NULL;
