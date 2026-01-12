@@ -1,14 +1,14 @@
-name: VS16-Ninja-CI
+name: VS17-Ninja-CI
 
 on: [push, pull_request]
 
 jobs:
   ci:
-    name: windows-vs16
+    name: windows-vs17
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
-    - name: 'Run CMake with VS16'
+    - name: 'Run CMake with VS17'
       uses: lukka/run-cmake@v2
       with:
         cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
@@ -16,7 +16,7 @@ jobs:
         buildDirectory: "${{ github.workspace }}/../../_temp/windows"
         cmakeBuildType: Release   
         buildWithCMake: true
-        cmakeGenerator: VS16Win64 
+        cmakeGenerator: VS17Win64 
         cmakeAppendedArgs:  -G Ninja
         buildWithCMakeArgs: --config Release  
         
