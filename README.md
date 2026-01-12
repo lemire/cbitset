@@ -1,7 +1,6 @@
 # cbitset
 ![Ubuntu 20.04 CI (GCC 9)](https://github.com/lemire/cbitset/workflows/Ubuntu%2020.04%20CI%20(GCC%209)/badge.svg)
 ![MSYS2-CI](https://github.com/lemire/cbitset/workflows/MSYS2-CI/badge.svg)
-![Visual Studio-CI](https://github.com/lemire/cbitset/workflows/VS16-CI/badge.svg)
 
 Simple bitset library in C. It includes fast functions
 to compute cardinalities, unions, intersections...
