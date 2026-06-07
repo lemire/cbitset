@@ -46,15 +46,68 @@ Advanced example:
 
 ## CMake
 
-```
-mkdir build
-cd build
-cmake ..
-cmake --build . --config Release  
-ctest .
+To build the library and run the tests and benchmarks:
+
+```bash
+cmake -B build
+cmake --build build
+ctest --test-dir build
 ```
 
-The cmake build also supports installation. The header files will be installed in a distinct subdirectory (cbitset).
+### Installing
+
+To install the compiled library, the headers and the CMake package files (by
+default under `/usr/local`):
+
+```bash
+cmake -B build
+cmake --build build
+cmake --install build
+```
+
+You can choose a different location with `--prefix`:
+
+```bash
+cmake --install build --prefix /path/to/install
+```
+
+The header files are installed in a distinct subdirectory (`cbitset`), so you
+include them with:
+
+```C
+#include <cbitset/bitset.h>
+```
+
+### Using cbitset from another CMake project
+
+Once installed, cbitset exports a CMake package. You locate it with
+`find_package` and link against the `cbitset::cbitset` target:
+
+```cmake
+find_package(cbitset REQUIRED)
+add_executable(myapp main.c)
+target_link_libraries(myapp PRIVATE cbitset::cbitset)
+```
+
+If cbitset is not on the default search path, point CMake at the install
+location with `-DCMAKE_PREFIX_PATH=/path/to/install`.
+
+You can also embed cbitset directly in a larger project without installing it,
+either via `add_subdirectory` or with `FetchContent`:
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(cbitset
+  GIT_REPOSITORY https://github.com/lemire/cbitset.git
+  GIT_TAG master)
+FetchContent_MakeAvailable(cbitset)
+
+target_link_libraries(myapp PRIVATE cbitset::cbitset)
+```
+
+When cbitset is consumed this way, its tests and benchmarks are skipped by
+default. They can be toggled explicitly with `-DCBITSET_BUILD_TESTS=OFF` and
+`-DCBITSET_BUILD_BENCHMARKS=OFF`.
 
 
 ## Old-school Makefiles
