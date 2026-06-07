@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cbitset · A fast, tiny bitset library in C</title>
+<meta name="description" content="cbitset is a simple, tiny and fast bitset library written in pure C. Compute cardinalities, unions, intersections, differences and iterate over set bits at high speed.">
+<meta name="author" content="Daniel Lemire and contributors">
+
+<!-- Open Graph / social -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="cbitset · A fast, tiny bitset library in C">
+<meta property="og:description" content="A simple, tiny and fast bitset library in pure C — cardinalities, unions, intersections, differences and high-speed iteration.">
+<meta property="og:url" content="https://lemire.github.io/cbitset/">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- Prism syntax highlighting -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg-soft: #11161f;
+    --panel: #161b24;
+    --panel-2: #1b212c;
+    --border: #232b38;
+    --text: #e6edf3;
+    --muted: #9aa7b8;
+    --faint: #6b7785;
+    --accent: #4f9cff;
+    --accent-2: #7c5cff;
+    --accent-grad: linear-gradient(120deg, #4f9cff 0%, #7c5cff 100%);
+    --green: #3fb950;
+    --code-bg: #0a0e14;
+    --radius: 14px;
+    --maxw: 1080px;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+
+  code, pre, .mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+  /* ---------- Top nav ---------- */
+  header.nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(13,17,23,0.82);
+    backdrop-filter: saturate(160%) blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner { display: flex; align-items: center; gap: 28px; height: 62px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; letter-spacing: -0.02em; }
+  .brand .dot { width: 26px; height: 26px; border-radius: 7px; background: var(--accent-grad); display: inline-flex; }
+  .nav-links { display: flex; gap: 24px; margin-left: auto; align-items: center; }
+  .nav-links a { color: var(--muted); font-weight: 500; font-size: 15px; }
+  .nav-links a:hover { color: var(--text); text-decoration: none; }
+  .nav-links .gh {
+    color: var(--text); border: 1px solid var(--border); padding: 7px 14px; border-radius: 9px;
+    background: var(--panel); display: inline-flex; align-items: center; gap: 7px;
+  }
+  .nav-links .gh:hover { border-color: var(--accent); }
+  @media (max-width: 680px) { .nav-links a:not(.gh) { display: none; } }
+
+  /* ---------- Hero ---------- */
+  .hero { position: relative; overflow: hidden; padding: 88px 0 72px; }
+  .hero::before {
+    content: ""; position: absolute; inset: 0;
+    background:
+      radial-gradient(700px 340px at 15% -10%, rgba(79,156,255,0.16), transparent 60%),
+      radial-gradient(600px 360px at 95% 0%, rgba(124,92,255,0.16), transparent 55%);
+    pointer-events: none;
+  }
+  .hero-inner { position: relative; display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; }
+  @media (max-width: 900px) { .hero-inner { grid-template-columns: 1fr; gap: 36px; } }
+
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 600; color: var(--accent);
+    background: rgba(79,156,255,0.10); border: 1px solid rgba(79,156,255,0.25);
+    padding: 5px 12px; border-radius: 999px; margin-bottom: 22px;
+  }
+  h1.title { font-size: 60px; line-height: 1.02; letter-spacing: -0.035em; margin: 0 0 18px; font-weight: 800; }
+  h1.title .grad { background: var(--accent-grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lead { font-size: 20px; color: var(--muted); max-width: 33ch; margin: 0 0 30px; }
+  @media (max-width: 600px) { h1.title { font-size: 42px; } .lead { font-size: 18px; } }
+
+  .cta { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 26px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    padding: 12px 22px; border-radius: 11px; font-weight: 600; font-size: 15px;
+    border: 1px solid transparent; cursor: pointer;
+  }
+  .btn-primary { background: var(--accent-grad); color: #fff; }
+  .btn-primary:hover { text-decoration: none; filter: brightness(1.08); }
+  .btn-ghost { background: var(--panel); color: var(--text); border-color: var(--border); }
+  .btn-ghost:hover { text-decoration: none; border-color: var(--accent); }
+
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; }
+  .badges img { height: 20px; }
+
+  /* hero code card */
+  .code-card {
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: hidden; box-shadow: 0 24px 60px -28px rgba(0,0,0,0.8);
+  }
+  .code-head {
+    display: flex; align-items: center; gap: 8px; padding: 11px 16px;
+    background: var(--panel); border-bottom: 1px solid var(--border);
+  }
+  .code-head .lights { display: flex; gap: 6px; }
+  .code-head .lights span { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+  .code-head .lights span:nth-child(1){ background:#ff5f57; }
+  .code-head .lights span:nth-child(2){ background:#febc2e; }
+  .code-head .lights span:nth-child(3){ background:#28c840; }
+  .code-head .fname { color: var(--faint); font-size: 13px; margin-left: 6px; }
+  pre[class*="language-"] { margin: 0; padding: 20px; font-size: 13.5px; line-height: 1.7; background: var(--code-bg) !important; }
+
+  /* ---------- Sections ---------- */
+  section { padding: 72px 0; border-top: 1px solid var(--border); }
+  .sec-head { text-align: center; max-width: 640px; margin: 0 auto 48px; }
+  .sec-head h2 { font-size: 34px; letter-spacing: -0.025em; margin: 0 0 12px; font-weight: 800; }
+  .sec-head p { color: var(--muted); font-size: 17px; margin: 0; }
+  .kicker { color: var(--accent); font-weight: 600; font-size: 14px; letter-spacing: 0.04em; text-transform: uppercase; }
+
+  /* feature grid */
+  .features { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  @media (max-width: 900px) { .features { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 520px) { .features { grid-template-columns: 1fr; } }
+  .feature {
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 26px 22px; transition: transform .15s ease, border-color .15s ease;
+  }
+  .feature:hover { transform: translateY(-3px); border-color: var(--accent); }
+  .feature .ico {
+    width: 42px; height: 42px; border-radius: 11px; display: grid; place-items: center;
+    background: rgba(79,156,255,0.12); margin-bottom: 16px;
+  }
+  .feature h3 { margin: 0 0 8px; font-size: 18px; }
+  .feature p { margin: 0; color: var(--muted); font-size: 15px; }
+
+  /* examples */
+  .ex-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  @media (max-width: 860px) { .ex-grid { grid-template-columns: 1fr; } }
+  .ex-title { font-weight: 600; font-size: 16px; margin: 0 0 12px; display: flex; align-items: center; gap: 9px; }
+  .ex-title .num { width: 24px; height: 24px; border-radius: 7px; background: var(--accent-grad); color: #fff; display: grid; place-items: center; font-size: 13px; font-weight: 700; }
+
+  /* install steps */
+  .install { max-width: 760px; margin: 0 auto; }
+  .copy-block { position: relative; margin: 0 0 18px; }
+  .copy-block .copy-btn {
+    position: absolute; top: 10px; right: 10px; z-index: 2;
+    background: var(--panel-2); border: 1px solid var(--border); color: var(--muted);
+    border-radius: 8px; padding: 5px 10px; font-size: 12px; cursor: pointer; font-weight: 500;
+  }
+  .copy-block .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+
+  /* API reference */
+  .api-group { margin-bottom: 34px; }
+  .api-group h3 { font-size: 19px; margin: 0 0 4px; display: flex; align-items: center; gap: 10px; }
+  .api-group h3 .tag { font-size: 12px; font-weight: 600; color: var(--accent); background: rgba(79,156,255,0.1); padding: 3px 9px; border-radius: 7px; }
+  .api-group > p.gd { color: var(--faint); margin: 0 0 16px; font-size: 14.5px; }
+  .api-table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .api-table tr { border-bottom: 1px solid var(--border); }
+  .api-table tr:last-child { border-bottom: none; }
+  .api-table td { padding: 13px 18px; vertical-align: top; }
+  .api-table td.sig { width: 46%; }
+  .api-table td.sig code { color: var(--accent); font-size: 13px; font-weight: 500; white-space: nowrap; }
+  .api-table td.desc { color: var(--muted); font-size: 14.5px; }
+  @media (max-width: 720px) {
+    .api-table td.sig code { white-space: normal; }
+    .api-table, .api-table tbody, .api-table tr, .api-table td { display: block; width: 100%; }
+    .api-table td { padding-bottom: 4px; }
+    .api-table td.desc { padding-top: 0; padding-bottom: 14px; }
+  }
+
+  /* footer */
+  footer { padding: 54px 0 60px; border-top: 1px solid var(--border); color: var(--muted); }
+  .foot-inner { display: flex; flex-wrap: wrap; gap: 24px; justify-content: space-between; align-items: center; }
+  .foot-links { display: flex; gap: 22px; flex-wrap: wrap; }
+  .foot-links a { color: var(--muted); }
+  .foot-links a:hover { color: var(--text); }
+  .foot-note { font-size: 14px; color: var(--faint); }
+
+  .center { text-align: center; }
+  .mt { margin-top: 28px; }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand"><span class="dot"></span> cbitset</div>
+    <nav class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#examples">Examples</a>
+      <a href="#install">Install</a>
+      <a href="#api">API</a>
+      <a class="gh" href="https://github.com/lemire/cbitset" target="_blank" rel="noopener">
+        <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+        GitHub
+      </a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<div class="hero">
+  <div class="wrap hero-inner">
+    <div>
+      <span class="eyebrow">● Pure C · header + one source file</span>
+      <h1 class="title">A fast, tiny<br><span class="grad">bitset library</span> in C</h1>
+      <p class="lead">cbitset gives you high-speed cardinalities, unions, intersections, differences and bit iteration — in straight, portable C.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#install">Get started</a>
+        <a class="btn btn-ghost" href="https://github.com/lemire/cbitset" target="_blank" rel="noopener">View on GitHub →</a>
+      </div>
+      <div class="badges">
+        <img src="https://github.com/lemire/cbitset/workflows/Ubuntu%2020.04%20CI%20(GCC%209)/badge.svg" alt="Ubuntu CI">
+        <img src="https://github.com/lemire/cbitset/workflows/MSYS2-CI/badge.svg" alt="MSYS2 CI">
+        <img src="https://img.shields.io/badge/C-11-blue.svg" alt="C11">
+        <img src="https://img.shields.io/badge/license-Apache--2.0-green.svg" alt="License">
+      </div>
+    </div>
+
+    <div class="code-card">
+      <div class="code-head">
+        <div class="lights"><span></span><span></span><span></span></div>
+        <span class="fname">example.c</span>
+      </div>
+<pre><code class="language-c">#include &lt;cbitset/bitset.h&gt;
+
+bitset_t *b = bitset_create();
+bitset_set(b, 10);
+bitset_set(b, 64);
+bitset_set(b, 1000);
+
+bitset_get(b, 10);    // true
+bitset_count(b);      // 3
+bitset_maximum(b);    // 1000
+
+// iterate over every set bit
+for (size_t i = 0; bitset_next_set_bit(b, &amp;i); i++) {
+    printf("%zu ", i); // 10 64 1000
+}
+
+bitset_free(b);</code></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ============ FEATURES ============ -->
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Why cbitset</div>
+      <h2>Small surface, serious speed</h2>
+      <p>Everything you need to treat bits as a set — and nothing you don't.</p>
+    </div>
+    <div class="features">
+      <div class="feature">
+        <div class="ico">📦</div>
+        <h3>Tiny</h3>
+        <p>Just three files — two headers and one source file. Drop it in and go.</p>
+      </div>
+      <div class="feature">
+        <div class="ico">⚡</div>
+        <h3>Fast</h3>
+        <p>Word-at-a-time set operations and trailing-zero iteration over 64-bit words.</p>
+      </div>
+      <div class="feature">
+        <div class="ico">✅</div>
+        <h3>Tested</h3>
+        <p>Continuously tested on Linux and Windows (MSYS2) across compilers.</p>
+      </div>
+      <div class="feature">
+        <div class="ico">🔧</div>
+        <h3>Straight C</h3>
+        <p>No dependencies, no C++. Portable C11 — works with MSVC, GCC and Clang.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EXAMPLES ============ -->
+<section id="examples">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Usage</div>
+      <h2>Built for real work</h2>
+      <p>Set operations, counts and iteration read just like the math.</p>
+    </div>
+    <div class="ex-grid">
+      <div>
+        <p class="ex-title"><span class="num">1</span> Set operations on two bitsets</p>
+        <div class="code-card">
+          <div class="code-head"><div class="lights"><span></span><span></span><span></span></div><span class="fname">setops.c</span></div>
+<pre><code class="language-c">bitset_t *a = bitset_create();
+bitset_t *b = bitset_create();
+for (int k = 0; k &lt; 1000; ++k) bitset_set(a, 2 * k);
+for (int k = 0; k &lt; 1000; ++k) bitset_set(b, 3 * k);
+
+// in-place: results land in `a`
+bitset_inplace_union(a, b);
+bitset_inplace_intersection(a, b);
+bitset_inplace_difference(a, b);
+bitset_inplace_symmetric_difference(a, b);
+
+// counts without materializing the result
+bitset_intersection_count(a, b);
+bitset_union_count(a, b);
+
+// predicates
+bitsets_intersect(a, b);
+bitsets_disjoint(a, b);
+bitset_contains_all(a, b);</code></pre>
+        </div>
+      </div>
+      <div>
+        <p class="ex-title"><span class="num">2</span> Fast iteration in batches</p>
+        <div class="code-card">
+          <div class="code-head"><div class="lights"><span></span><span></span><span></span></div><span class="fname">iterate.c</span></div>
+<pre><code class="language-c">bitset_t *b = bitset_create();
+for (int k = 0; k &lt; 1000; ++k) bitset_set(b, 3 * k);
+
+// one bit at a time
+for (size_t i = 0; bitset_next_set_bit(b, &amp;i); i++) {
+    do_something(i);
+}
+
+// or decode many bits per call
+size_t buffer[256];
+size_t howmany = 0;
+for (size_t from = 0;
+     (howmany = bitset_next_set_bits(b, buffer, 256, &amp;from)) > 0;
+     from++) {
+    for (size_t i = 0; i &lt; howmany; i++)
+        do_something(buffer[i]);
+}
+
+bitset_free(b);</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ INSTALL ============ -->
+<section id="install">
+  <div class="wrap install">
+    <div class="sec-head">
+      <div class="kicker">Get started</div>
+      <h2>Install in a minute</h2>
+      <p>Build with CMake, vendor it directly, or use plain Makefiles.</p>
+    </div>
+
+    <h3 style="margin:0 0 12px;">Build &amp; test with CMake</h3>
+    <div class="copy-block">
+      <button class="copy-btn" data-copy="cmake -B build
+cmake --build build
+ctest --test-dir build">Copy</button>
+      <div class="code-card"><pre><code class="language-bash">cmake -B build
+cmake --build build
+ctest --test-dir build</code></pre></div>
+    </div>
+
+    <h3 style="margin:28px 0 12px;">Install the library, headers &amp; CMake package</h3>
+    <div class="copy-block">
+      <button class="copy-btn" data-copy="cmake -B build
+cmake --build build
+cmake --install build">Copy</button>
+      <div class="code-card"><pre><code class="language-bash">cmake -B build
+cmake --build build
+cmake --install build   # add --prefix /path to relocate</code></pre></div>
+    </div>
+    <p class="gd" style="color:var(--muted);margin:10px 0 0;">Headers install under a <code>cbitset</code> subdirectory, so include them as <code>#include &lt;cbitset/bitset.h&gt;</code>.</p>
+
+    <h3 style="margin:28px 0 12px;">Pull it into your own CMake project</h3>
+    <div class="copy-block">
+      <button class="copy-btn" data-copy="include(FetchContent)
+FetchContent_Declare(cbitset
+  GIT_REPOSITORY https://github.com/lemire/cbitset.git
+  GIT_TAG master)
+FetchContent_MakeAvailable(cbitset)
+
+target_link_libraries(myapp PRIVATE cbitset::cbitset)">Copy</button>
+      <div class="code-card"><pre><code class="language-cmake">include(FetchContent)
+FetchContent_Declare(cbitset
+  GIT_REPOSITORY https://github.com/lemire/cbitset.git
+  GIT_TAG master)
+FetchContent_MakeAvailable(cbitset)
+
+target_link_libraries(myapp PRIVATE cbitset::cbitset)</code></pre></div>
+    </div>
+    <p class="gd" style="color:var(--muted);margin:10px 0 0;">Already installed? Find it with <code>find_package(cbitset REQUIRED)</code> and link <code>cbitset::cbitset</code>.</p>
+
+    <h3 style="margin:28px 0 12px;">Old-school Makefile</h3>
+    <div class="copy-block">
+      <button class="copy-btn" data-copy="make
+./unit">Copy</button>
+      <div class="code-card"><pre><code class="language-bash">make
+./unit</code></pre></div>
+    </div>
+    <p class="gd center" style="color:var(--faint);margin:22px 0 0;">Requires a C11-compatible compiler. Visual Studio supports C11/C17.</p>
+  </div>
+</section>
+
+<!-- ============ API ============ -->
+<section id="api">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Reference</div>
+      <h2>API at a glance</h2>
+      <p>The full public interface from <code>cbitset/bitset.h</code>.</p>
+    </div>
+
+    <div class="api-group">
+      <h3>Lifecycle <span class="tag">create / free</span></h3>
+      <table class="api-table"><tbody>
+        <tr><td class="sig"><code>bitset_t *bitset_create(void)</code></td><td class="desc">Create a new empty bitset. Returns <code>NULL</code> on failure.</td></tr>
+        <tr><td class="sig"><code>bitset_t *bitset_create_with_capacity(size_t size)</code></td><td class="desc">Create a bitset preallocated to hold <code>size</code> bits.</td></tr>
+        <tr><td class="sig"><code>bitset_t *bitset_copy(const bitset_t *b)</code></td><td class="desc">Return an independent copy of a bitset.</td></tr>
+        <tr><td class="sig"><code>void bitset_free(bitset_t *b)</code></td><td class="desc">Free all memory held by a bitset.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="api-group">
+      <h3>Bit access <span class="tag">set / get</span></h3>
+      <table class="api-table"><tbody>
+        <tr><td class="sig"><code>void bitset_set(bitset_t *b, size_t i)</code></td><td class="desc">Set bit <code>i</code> to one, growing the bitset if needed.</td></tr>
+        <tr><td class="sig"><code>void bitset_set_to_value(bitset_t *b, size_t i, bool v)</code></td><td class="desc">Set bit <code>i</code> to the given boolean value.</td></tr>
+        <tr><td class="sig"><code>bool bitset_get(const bitset_t *b, size_t i)</code></td><td class="desc">Return the value of bit <code>i</code>.</td></tr>
+        <tr><td class="sig"><code>void bitset_clear(bitset_t *b)</code></td><td class="desc">Set every bit to zero.</td></tr>
+        <tr><td class="sig"><code>void bitset_fill(bitset_t *b)</code></td><td class="desc">Set every bit to one.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="api-group">
+      <h3>Queries <span class="tag">count / min / max</span></h3>
+      <table class="api-table"><tbody>
+        <tr><td class="sig"><code>size_t bitset_count(const bitset_t *b)</code></td><td class="desc">Number of bits set to one (cardinality).</td></tr>
+        <tr><td class="sig"><code>bool bitset_empty(const bitset_t *b)</code></td><td class="desc">True if no bit is set.</td></tr>
+        <tr><td class="sig"><code>size_t bitset_minimum(const bitset_t *b)</code></td><td class="desc">Index of the first set bit, or <code>SIZE_MAX</code> if empty.</td></tr>
+        <tr><td class="sig"><code>size_t bitset_maximum(const bitset_t *b)</code></td><td class="desc">Index of the last set bit, or zero if empty.</td></tr>
+        <tr><td class="sig"><code>size_t bitset_size_in_bits(const bitset_t *b)</code></td><td class="desc">How many bits can currently be accessed.</td></tr>
+        <tr><td class="sig"><code>size_t bitset_size_in_bytes(const bitset_t *b)</code></td><td class="desc">Memory used by the backing buffer, in bytes.</td></tr>
+        <tr><td class="sig"><code>size_t bitset_size_in_words(const bitset_t *b)</code></td><td class="desc">Memory used by the backing buffer, in 64-bit words.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="api-group">
+      <h3>Set operations <span class="tag">union / intersection / difference</span></h3>
+      <p class="gd">In-place operations write the result into <code>b1</code>; copy first to keep the original.</p>
+      <table class="api-table"><tbody>
+        <tr><td class="sig"><code>bool bitset_inplace_union(b1, b2)</code></td><td class="desc">b1 ← b1 ∪ b2. Returns true on success.</td></tr>
+        <tr><td class="sig"><code>void bitset_inplace_intersection(b1, b2)</code></td><td class="desc">b1 ← b1 ∩ b2.</td></tr>
+        <tr><td class="sig"><code>void bitset_inplace_difference(b1, b2)</code></td><td class="desc">b1 ← b1 ∖ b2.</td></tr>
+        <tr><td class="sig"><code>bool bitset_inplace_symmetric_difference(b1, b2)</code></td><td class="desc">b1 ← b1 △ b2. Returns true on success.</td></tr>
+        <tr><td class="sig"><code>size_t bitset_union_count(b1, b2)</code></td><td class="desc">Size of the union without materializing it.</td></tr>
+        <tr><td class="sig"><code>size_t bitset_intersection_count(b1, b2)</code></td><td class="desc">Size of the intersection without materializing it.</td></tr>
+        <tr><td class="sig"><code>size_t bitset_difference_count(b1, b2)</code></td><td class="desc">Size of the difference.</td></tr>
+        <tr><td class="sig"><code>size_t bitset_symmetric_difference_count(b1, b2)</code></td><td class="desc">Size of the symmetric difference.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="api-group">
+      <h3>Predicates <span class="tag">relations</span></h3>
+      <table class="api-table"><tbody>
+        <tr><td class="sig"><code>bool bitsets_intersect(b1, b2)</code></td><td class="desc">True if the bitsets share any element.</td></tr>
+        <tr><td class="sig"><code>bool bitsets_disjoint(b1, b2)</code></td><td class="desc">True if the bitsets share no element.</td></tr>
+        <tr><td class="sig"><code>bool bitset_contains_all(b1, b2)</code></td><td class="desc">True if b1 contains every set bit of b2.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="api-group">
+      <h3>Iteration <span class="tag">traverse set bits</span></h3>
+      <table class="api-table"><tbody>
+        <tr><td class="sig"><code>bool bitset_next_set_bit(const bitset_t *b, size_t *i)</code></td><td class="desc">Advance <code>*i</code> to the next set bit; returns false when exhausted.</td></tr>
+        <tr><td class="sig"><code>size_t bitset_next_set_bits(b, buffer, capacity, *from)</code></td><td class="desc">Decode up to <code>capacity</code> set bits into <code>buffer</code>; returns the count.</td></tr>
+        <tr><td class="sig"><code>bool bitset_for_each(b, iterator, ptr)</code></td><td class="desc">Call <code>iterator(value, ptr)</code> for each set bit; stops if it returns false.</td></tr>
+        <tr><td class="sig"><code>void bitset_print(const bitset_t *b)</code></td><td class="desc">Print the set as <code>{a, b, c, }</code> to stdout.</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="api-group">
+      <h3>Resizing <span class="tag">advanced</span></h3>
+      <table class="api-table"><tbody>
+        <tr><td class="sig"><code>bool bitset_resize(b, newarraysize, padwithzeroes)</code></td><td class="desc">Resize to <code>newarraysize × 64</code> bits, optionally zero-padding.</td></tr>
+        <tr><td class="sig"><code>bool bitset_grow(b, newarraysize)</code></td><td class="desc">Grow capacity to <code>newarraysize × 64</code> bits with zero padding.</td></tr>
+        <tr><td class="sig"><code>bool bitset_trim(b)</code></td><td class="desc">Release unused trailing memory.</td></tr>
+        <tr><td class="sig"><code>void bitset_shift_left(b, s)</code></td><td class="desc">Shift every value up by <code>s</code> positions.</td></tr>
+        <tr><td class="sig"><code>void bitset_shift_right(b, s)</code></td><td class="desc">Shift every value down by <code>s</code>; negatives are dropped.</td></tr>
+      </tbody></table>
+    </div>
+
+    <p class="center mt"><a class="btn btn-ghost" href="https://github.com/lemire/cbitset/blob/master/include/bitset.h" target="_blank" rel="noopener">Read the full header →</a></p>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap foot-inner">
+    <div>
+      <div class="brand" style="margin-bottom:8px;"><span class="dot"></span> cbitset</div>
+      <div class="foot-note">A fast, tiny bitset library in C. Released under the Apache 2.0 License.</div>
+    </div>
+    <div class="foot-links">
+      <a href="https://github.com/lemire/cbitset" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/lemire/cbitset/issues" target="_blank" rel="noopener">Issues</a>
+      <a href="https://github.com/lemire/cbitset/blob/master/LICENSE" target="_blank" rel="noopener">License</a>
+      <a href="https://lemire.me" target="_blank" rel="noopener">Daniel Lemire</a>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cmake.min.js"></script>
+<script>
+  // copy-to-clipboard
+  document.querySelectorAll('.copy-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var text = btn.getAttribute('data-copy');
+      navigator.clipboard.writeText(text).then(function () {
+        var old = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(function () { btn.textContent = old; }, 1400);
+      });
+    });
+  });
+</script>
+</body>
+</html>
