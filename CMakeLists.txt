@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 project(cbitset
-  VERSION 0.3.0
+  VERSION 0.4.0
   DESCRIPTION "Simple bitset library in C"
   HOMEPAGE_URL "https://github.com/lemire/cbitset"
   LANGUAGES C)
