@@ -6,9 +6,7 @@ jobs:
   ubuntu-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup cmake
-        uses: jwlawson/actions-setup-cmake@v1.9
+      - uses: actions/checkout@v4
       - name: Use cmake
         run: |
           mkdir build &&
@@ -16,5 +14,5 @@ jobs:
           cmake  -DCMAKE_INSTALL_PREFIX:PATH=destination ..  &&
           cmake --build .   &&
           ctest -j --output-on-failure  &&
-          make install  &&
-          echo -e '#include <cbitset/bitset.h>\nint main(int argc,char**argv) {bitset_t * b = bitset_create(); bitset_set(b,10); bitset_get(b,10); bitset_free(b); }' > tmp.c && cc  -Idestination/include  -Ldestination/lib -std=c11 -Wl,-rpath,destination/lib -o linkandrun tmp.c -lcbitset && ./linkandrun 
+          cmake --install .  &&
+          echo -e '#include <cbitset/bitset.h>\nint main(int argc,char**argv) {bitset_t * b = bitset_create(); bitset_set(b,10); bitset_get(b,10); bitset_free(b); }' > tmp.c && cc  -Idestination/include  -Ldestination/lib -std=c11 -Wl,-rpath,destination/lib -o linkandrun tmp.c -lcbitset && ./linkandrun

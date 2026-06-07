@@ -4,22 +4,13 @@ on: [push, pull_request]
 
 jobs:
   ci:
-    name: windows-vs17
+    name: windows-vs17-clang
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: 'Run CMake with VS17'
-      uses: lukka/run-cmake@v2
-      with:
-        cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
-        cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
-        buildDirectory: "${{ github.workspace }}/../../_temp/windows"
-        cmakeBuildType: Release   
-        buildWithCMake: true
-        cmakeGenerator: VS17Win64 
-        cmakeAppendedArgs:  -T ClangCL
-        buildWithCMakeArgs: --config Release  
-        
-    - name: 'Run CTest'
-      run: ctest -C Release   --output-on-failure 
-      working-directory: "${{ github.workspace }}/../../_temp/windows"
+    - uses: actions/checkout@v4
+    - name: Configure
+      run: cmake -G "Visual Studio 17 2022" -A x64 -T ClangCL -B build
+    - name: Build
+      run: cmake --build build --config Release --verbose
+    - name: Test
+      run: ctest --test-dir build -C Release --output-on-failure

@@ -1,25 +1,16 @@
-name: VS16-CI
+name: VS17-CI
 
 on: [push, pull_request]
 
 jobs:
   ci:
-    name: windows-vs16
+    name: windows-vs17
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: 'Run CMake with VS16'
-      uses: lukka/run-cmake@v2
-      with:
-        cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
-        cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
-        buildDirectory: "${{ github.workspace }}/../../_temp/windows"
-        cmakeBuildType: Release   
-        buildWithCMake: true
-        cmakeGenerator: VS16Win64 
-        buildWithCMakeArgs: --config Release  
-        
-    - name: 'Run CTest'
-      run: ctest -C Release    --output-on-failure 
-      working-directory: "${{ github.workspace }}/../../_temp/windows"
-  
+    - uses: actions/checkout@v4
+    - name: Configure
+      run: cmake -G "Visual Studio 17 2022" -A x64 -B build
+    - name: Build
+      run: cmake --build build --config Release --verbose
+    - name: Test
+      run: ctest --test-dir build -C Release --output-on-failure
