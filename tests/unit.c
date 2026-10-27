@@ -84,6 +84,28 @@ void test_shift_left() {
   }
 }
 
+/* Shifting an empty bitset left leaves it empty. */
+void test_shift_left_empty() {
+  for (size_t sh = 0; sh < 256; sh++) {
+    bitset_t *b = bitset_create();
+    bitset_shift_left(b, sh);
+    TEST_ASSERT(bitset_empty(b));
+    bitset_free(b);
+  }
+}
+
+/* A shift too large for the bitset to grow to leaves it unchanged. */
+void test_shift_left_resize_fails() {
+  bitset_t *b = bitset_create();
+  bitset_set(b, 3);
+  bitset_shift_left(b, SIZE_MAX);      // not a multiple of 64
+  bitset_shift_left(b, SIZE_MAX - 63); // a multiple of 64
+  TEST_ASSERT(bitset_size_in_words(b) == 1);
+  TEST_ASSERT(bitset_get(b, 3));
+  TEST_ASSERT(bitset_count(b) == 1);
+  bitset_free(b);
+}
+
 void test_set_to_val() {
   bitset_t *b = bitset_create();
   bitset_set_to_value(b, 1, true);
@@ -112,6 +134,55 @@ void test_shift_right() {
     }
     bitset_free(b);
   }
+}
+
+/* Shifting right by as many bits as the bitset holds, or more, empties it. */
+void test_shift_right_past_size() {
+  const size_t values[] = {0, 1, 63, 64, 70, 127}; // two words
+  const size_t count = sizeof(values) / sizeof(values[0]);
+  for (size_t sh = 0; sh < 256; sh++) {
+    bitset_t *b = bitset_create();
+    for (size_t k = 0; k < count; ++k) {
+      bitset_set(b, values[k]);
+    }
+    TEST_ASSERT(bitset_size_in_words(b) == 2);
+    bitset_shift_right(b, sh);
+    size_t expected = 0;
+    for (size_t k = 0; k < count; ++k) {
+      if (values[k] >= sh) {
+        TEST_ASSERT(bitset_get(b, values[k] - sh));
+        expected++;
+      }
+    }
+    TEST_ASSERT(bitset_count(b) == expected);
+    if (sh >= 128) {
+      TEST_ASSERT(bitset_size_in_words(b) == 0);
+    }
+    bitset_free(b);
+  }
+}
+
+/* Shifting an empty bitset right leaves it empty. */
+void test_shift_right_empty() {
+  for (size_t sh = 0; sh < 256; sh++) {
+    bitset_t *b = bitset_create();
+    bitset_shift_right(b, sh);
+    TEST_ASSERT(bitset_empty(b));
+    bitset_free(b);
+  }
+}
+
+/* Trimming a bitset whose words are all zero leaves an empty bitset that can
+ * still be used. */
+void test_trim_all_zero() {
+  bitset_t *b = bitset_create_with_capacity(128); // two zero words
+  TEST_ASSERT(bitset_trim(b));
+  TEST_ASSERT(bitset_size_in_words(b) == 0);
+  TEST_ASSERT(bitset_empty(b));
+  bitset_set(b, 70);
+  TEST_ASSERT(bitset_get(b, 70));
+  TEST_ASSERT(bitset_count(b) == 1);
+  bitset_free(b);
 }
 
 void test_union_intersection() {
@@ -322,6 +393,11 @@ int main() {
   test_counts();
   test_shift_right();
   test_shift_left();
+  test_shift_right_past_size();
+  test_shift_right_empty();
+  test_shift_left_empty();
+  test_shift_left_resize_fails();
+  test_trim_all_zero();
   test_disjoint();
   test_intersects();
   test_contains_all();
